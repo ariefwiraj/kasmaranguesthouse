@@ -1,38 +1,56 @@
-export const galleryItems = [
+import aboutImg from "../assets/images/about.jpg";
+import room1Img from "../assets/images/rooms/room-1.jpg";
+import room2Img from "../assets/images/rooms/room-2.jpg";
+import room3Img from "../assets/images/rooms/room-3.jpg";
+import room4Img from "../assets/images/rooms/room-4.jpg";
+
+export const galleryData = [
   {
-    id: "front-1",
-    title: "Tampak Depan",
-    image: null,
-    category: "front",
+    id: 1,
+    url: aboutImg,
+    title: "Area Lobi Depan",
+    category: "Fasilitas Umum"
   },
   {
-    id: "room-1",
-    title: "Suasana Kamar",
-    image: null,
-    category: "room",
+    id: 2,
+    url: room4Img,
+    title: "Standard Room",
+    category: "Kamar"
   },
   {
-    id: "room-2",
-    title: "Fasilitas Kamar",
-    image: null,
-    category: "room",
+    id: 3,
+    url: room3Img,
+    title: "Deluxe Room",
+    category: "Kamar"
   },
   {
-    id: "bathroom-1",
-    title: "Kamar Mandi Dalam",
-    image: null,
-    category: "bathroom",
+    id: 4,
+    url: room2Img,
+    title: "Kamar Mandi Premium",
+    category: "Kamar Mandi"
   },
   {
-    id: "common-1",
-    title: "Area Bersantai",
-    image: null,
-    category: "common-area",
+    id: 5,
+    url: room1Img,
+    title: "Wastafel",
+    category: "Kamar Mandi"
   },
   {
-    id: "parking-1",
-    title: "Area Parkir",
-    image: null,
-    category: "parking",
+    id: 6,
+    url: null, // Placeholder
+    title: "Area Parkir Luas",
+    category: "Fasilitas Umum"
+  },
+  {
+    id: 7,
+    url: null, // Placeholder
+    title: "Koridor Tamu",
+    category: "Fasilitas Umum"
+  },
+  {
+    id: 8,
+    url: null, // Placeholder
+    title: "Tampak Depan Bangunan",
+    category: "Eksterior"
   }
 ];

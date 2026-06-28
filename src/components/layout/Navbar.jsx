@@ -15,6 +15,7 @@ export default function Navbar() {
   const navLinks = [
     { name: "Tentang", href: "#about" },
     { name: "Kamar", href: "#rooms" },
+    { name: "Galeri", href: "#gallery" },
     { name: "Fasilitas", href: "#facilities" },
     { name: "Lokasi", href: "#location" },
   ];
@@ -24,7 +25,7 @@ export default function Navbar() {
       setIsScrolled(window.scrollY > 20);
       
       // Update active section
-      const sections = ["home", "about", "rooms", "facilities", "location"];
+      const sections = ["home", "about", "rooms", "gallery", "facilities", "location"];
       let current = "";
       
       for (const section of sections) {
@@ -61,7 +62,7 @@ export default function Navbar() {
       className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
         isScrolled || mobileMenuOpen
           ? "bg-white shadow-sm py-3"
-          : "bg-transparent py-5"
+          : "bg-transparent py-3"
       }`}
     >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 flex justify-between items-center min-h-[60px]">
@@ -74,7 +75,7 @@ export default function Navbar() {
           <img 
             src={(isScrolled || mobileMenuOpen) ? logoDark : logoWhite} 
             alt="Kasmaran Guest House" 
-            className="absolute left-0 top-1/2 -translate-y-1/2 h-20 md:h-28 w-auto transition-all duration-300 drop-shadow-md"
+            className="absolute left-0 top-1/2 -translate-y-1/2 h-20 md:h-13 w-auto transition-all duration-300 drop-shadow-md"
           />
         </a>
 

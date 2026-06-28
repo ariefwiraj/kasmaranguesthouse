@@ -1,4 +1,6 @@
 import { motion } from "framer-motion";
+import { CheckCircle2 } from "lucide-react";
+import aboutImg from "../../assets/images/about.jpg";
 
 export default function About() {
   return (
@@ -14,17 +16,28 @@ export default function About() {
             transition={{ duration: 0.8 }}
             className="relative"
           >
-            <div className="aspect-[4/5] md:aspect-square w-full max-w-md mx-auto rounded-xl overflow-hidden shadow-xl relative z-10">
-              {/* CSS Placeholder */}
-              <div className="w-full h-full bg-[#E8E2D9] flex items-center justify-center">
-                <span className="text-muted-foreground font-medium">
-                  [ About Image Placeholder ]
-                </span>
-              </div>
+            <div className="aspect-square md:aspect-[4/5] rounded-2xl overflow-hidden shadow-xl relative z-10">
+              <img 
+                src={aboutImg} 
+                alt="Lobby Kasmaran Guest House Syariah" 
+                className="w-full h-full object-cover"
+              />
             </div>
             
-            {/* Background offset square */}
-            <div className="absolute top-8 -right-4 md:-right-8 w-full max-w-md h-full bg-[#FAF7F2] rounded-xl z-0 border border-border"></div>
+            {/* Decorative Elements */}
+            <div className="absolute -top-6 -left-6 w-32 h-32 bg-gold/20 rounded-full blur-2xl -z-10"></div>
+            <div className="absolute -bottom-8 -right-8 w-40 h-40 bg-primary/10 rounded-full blur-3xl -z-10"></div>
+            
+            {/* Floating Badge */}
+            {/* <div className="absolute -bottom-6 -right-6 md:right-auto md:-left-6 bg-white p-4 rounded-xl shadow-lg z-20 flex items-center gap-4">
+              <div className="w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center text-primary font-bold text-xl">
+                ✨
+              </div>
+              <div>
+                <p className="font-heading font-bold text-foreground">Nyaman</p>
+                <p className="text-sm text-muted-foreground">& Bersih</p>
+              </div>
+            </div> */}
           </motion.div>
 
           {/* Text Content Side */}

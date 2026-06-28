@@ -16,8 +16,8 @@ export default function Home() {
         <Hero />
         <About />
         <Rooms />
-        <Facilities />
         <Gallery />
+        <Facilities />
         <LocationInfo />
       </main>
       <Footer />

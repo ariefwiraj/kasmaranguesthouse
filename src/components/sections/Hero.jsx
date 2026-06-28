@@ -19,8 +19,14 @@ export default function Hero() {
   };
 
   return (
-    // 1. MENGUBAH PT-20 MENJADI PT-32 (MOBILE) DAN MD:PT-44 (DESKTOP) UNTUK MERENDAHKAN KONTEN
-    <section id="home" className="relative min-h-[105vh] flex items-start sm:items-center justify-center pt-32 md:pt-20 pb-12 overflow-hidden isolate">
+    /* PERUBAHAN: 
+      - Mengubah min-h-[105vh] menjadi min-h-[85vh] (atau bisa pakai min-h-screen jika ingin pas 1 layar).
+      - Menyesuaikan padding top untuk mobile (pt-32) dan desktop (md:pt-44) agar konten agak turun ke bawah.
+    */
+    <section 
+      id="home" 
+      className="relative min-h-screen md:min-h-screen flex items-center justify-center pt-32 md:pt-44 pb-12 overflow-hidden isolate"
+    >
       {/* Background Image & Overlay */}
       <div className="absolute inset-0">
         <img 
@@ -31,7 +37,7 @@ export default function Hero() {
       </div>
       <div className="absolute inset-0 bg-black/60 pointer-events-none"></div>
 
-      {/* 2. MENYESUAIKAN MARGIN BAWAH KONTEN CONTAINER */}
+      {/* Konten Utama */}
       <div className="max-w-4xl mx-auto px-4 sm:px-6 w-full relative z-10 text-center mb-6 sm:mb-12">
         <motion.div 
           initial={{ opacity: 0, y: 30 }}
