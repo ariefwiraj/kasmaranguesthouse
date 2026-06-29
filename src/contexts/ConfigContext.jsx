@@ -14,7 +14,12 @@ export const ConfigProvider = ({ children }) => {
   const fetchConfig = async () => {
     try {
       const res = await api.get('/config');
-      setConfig(res.data);
+      const apiConfig = res.data || {};
+      if (Object.keys(apiConfig).length === 0) {
+        setConfig(defaultConfig);
+      } else {
+        setConfig({ ...defaultConfig, ...apiConfig });
+      }
     } catch (err) {
       console.error("Failed to load config from API, using fallback:", err);
       // Fallback to local JSON if API fails (e.g. on Vercel before DB is ready or if offline)
