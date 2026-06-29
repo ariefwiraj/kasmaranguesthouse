@@ -1,13 +1,14 @@
 import express from 'express';
-import { readFile, writeFile } from '../utils/github.js';
+import supabase from '../utils/supabase.js';
 import { requireAuth } from '../middleware/auth.js';
 
 const router = express.Router();
-const DATA_PATH = 'src/data/facilities.json';
 
 router.get('/', async (req, res) => {
   try {
-    const { data } = await readFile(DATA_PATH);
+    if (!supabase) throw new Error("Supabase is not configured");
+    const { data, error } = await supabase.from('facilities').select('*').order('created_at', { ascending: true });
+    if (error) throw error;
     res.json(data || []);
   } catch (error) {
     res.status(500).json({ error: 'Failed to fetch facilities' });
@@ -16,50 +17,47 @@ router.get('/', async (req, res) => {
 
 router.post('/', requireAuth, async (req, res) => {
   try {
-    const { data, sha } = await readFile(DATA_PATH);
-    const facilities = data || [];
+    if (!supabase) throw new Error("Supabase is not configured");
     const newFacility = req.body;
     
     if (!newFacility.id) {
        newFacility.id = newFacility.name.toLowerCase().replace(/[^a-z0-9]+/g, '-');
     }
 
-    facilities.push(newFacility);
-    await writeFile(DATA_PATH, facilities, sha, `Add facility: ${newFacility.name}`);
-    res.status(201).json(newFacility);
+    const { data, error } = await supabase.from('facilities').insert([newFacility]).select().single();
+    if (error) throw error;
+    
+    res.status(201).json(data);
   } catch (error) {
-    res.status(500).json({ error: 'Failed to add facility' });
+    res.status(500).json({ error: error.message || 'Failed to add facility' });
   }
 });
 
 router.put('/:id', requireAuth, async (req, res) => {
   try {
+    if (!supabase) throw new Error("Supabase is not configured");
     const { id } = req.params;
-    const { data, sha } = await readFile(DATA_PATH);
-    const facilities = data || [];
     
-    const index = facilities.findIndex(f => f.id === id);
-    if (index === -1) return res.status(404).json({ error: 'Facility not found' });
-
-    facilities[index] = { ...facilities[index], ...req.body, id };
-    await writeFile(DATA_PATH, facilities, sha, `Update facility: ${id}`);
-    res.json(facilities[index]);
+    const { data, error } = await supabase.from('facilities').update(req.body).eq('id', id).select().single();
+    if (error) throw error;
+    
+    res.json(data);
   } catch (error) {
-    res.status(500).json({ error: 'Failed to update facility' });
+    res.status(500).json({ error: error.message || 'Failed to update facility' });
   }
 });
 
 router.delete('/:id', requireAuth, async (req, res) => {
   try {
+    if (!supabase) throw new Error("Supabase is not configured");
     const { id } = req.params;
-    const { data, sha } = await readFile(DATA_PATH);
-    let facilities = data || [];
     
-    facilities = facilities.filter(f => f.id !== id);
-    await writeFile(DATA_PATH, facilities, sha, `Delete facility: ${id}`);
+    const { error } = await supabase.from('facilities').delete().eq('id', id);
+    if (error) throw error;
+    
     res.json({ success: true });
   } catch (error) {
-    res.status(500).json({ error: 'Failed to delete facility' });
+    res.status(500).json({ error: error.message || 'Failed to delete facility' });
   }
 });
 

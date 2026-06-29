@@ -1,5 +1,5 @@
 import express from 'express';
-import { uploadFile, deleteFile, readFile } from '../utils/github.js';
+import supabase from '../utils/supabase.js';
 import { requireAuth } from '../middleware/auth.js';
 
 const router = express.Router();
@@ -7,44 +7,64 @@ const router = express.Router();
 // Body parser limits handled in app.js (10mb)
 router.post('/', requireAuth, async (req, res) => {
   try {
+    if (!supabase) throw new Error("Supabase is not configured");
     const { file, folder, filename } = req.body; // file should be base64 string
     
     if (!file || !folder || !filename) {
       return res.status(400).json({ error: 'Missing required fields (file, folder, filename)' });
     }
 
-    const path = `public/uploads/${folder}/${filename}`;
+    const base64Data = file.replace(/^data:image\/\w+;base64,/, "");
+    const buffer = Buffer.from(base64Data, 'base64');
     
-    await uploadFile(path, file, `Upload image: ${filename}`);
+    // Determine mime type from base64 if possible
+    let contentType = 'image/jpeg';
+    if (file.startsWith('data:image/png')) contentType = 'image/png';
+    else if (file.startsWith('data:image/webp')) contentType = 'image/webp';
+
+    const path = `${folder}/${filename}`;
     
-    // Return relative URL for frontend usage
-    res.json({ url: `/uploads/${folder}/${filename}` });
+    const { data, error } = await supabase
+      .storage
+      .from('uploads')
+      .upload(path, buffer, {
+        contentType: contentType,
+        upsert: true
+      });
+      
+    if (error) throw error;
+    
+    // Get public URL
+    const { data: publicUrlData } = supabase.storage.from('uploads').getPublicUrl(path);
+    
+    res.json({ url: publicUrlData.publicUrl });
   } catch (error) {
-    res.status(500).json({ error: 'Failed to upload image' });
+    res.status(500).json({ error: error.message || 'Failed to upload image' });
   }
 });
 
 router.delete('/', requireAuth, async (req, res) => {
   try {
-    const { path } = req.body; // e.g. /uploads/rooms/room-1.jpg
+    if (!supabase) throw new Error("Supabase is not configured");
+    const { path } = req.body; // e.g. URL returned from Supabase
     
     if (!path) {
       return res.status(400).json({ error: 'Missing path parameter' });
     }
 
-    // Strip leading slash to match github path
-    const githubPath = `public${path}`;
-    
-    // Get file SHA first
-    const { sha } = await readFile(githubPath);
-    if (!sha) {
-       return res.status(404).json({ error: 'File not found' });
+    // Extract path after 'uploads/'
+    const urlParts = path.split('/uploads/');
+    if (urlParts.length < 2) {
+       return res.status(400).json({ error: 'Invalid Supabase URL' });
     }
+    const storagePath = urlParts[1];
 
-    await deleteFile(githubPath, sha, `Delete image: ${path}`);
+    const { error } = await supabase.storage.from('uploads').remove([storagePath]);
+    if (error) throw error;
+
     res.json({ success: true });
   } catch (error) {
-    res.status(500).json({ error: 'Failed to delete image' });
+    res.status(500).json({ error: error.message || 'Failed to delete image' });
   }
 });
 

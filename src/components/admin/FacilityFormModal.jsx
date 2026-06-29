@@ -31,7 +31,8 @@ export default function FacilityFormModal({ isOpen, onClose, initialData, onSave
       onSave();
       onClose();
     } catch (err) {
-      alert('Gagal menyimpan: ' + err.message);
+      const errorMessage = err.response?.data?.error || err.message;
+      alert('Gagal menyimpan: ' + errorMessage);
     } finally {
       setIsSaving(false);
     }

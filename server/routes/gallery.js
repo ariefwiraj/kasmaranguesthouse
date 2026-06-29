@@ -1,97 +1,106 @@
 import express from 'express';
-import { readFile, writeFile } from '../utils/github.js';
+import supabase from '../utils/supabase.js';
 import { requireAuth } from '../middleware/auth.js';
 
 const router = express.Router();
-const DATA_PATH = 'src/data/gallery.json';
 
 router.get('/', async (req, res) => {
   try {
-    const { data } = await readFile(DATA_PATH);
-    res.json(data || { categories: [], items: [] });
+    if (!supabase) throw new Error("Supabase is not configured");
+    
+    // Fetch categories and items
+    const { data: catData, error: catError } = await supabase.from('gallery_categories').select('name');
+    if (catError) throw catError;
+    
+    const { data: itemData, error: itemError } = await supabase.from('gallery_items').select('*').order('created_at', { ascending: true });
+    if (itemError) throw itemError;
+    
+    res.json({
+      categories: catData.map(c => c.name),
+      items: itemData || []
+    });
   } catch (error) {
-    res.status(500).json({ error: 'Failed to fetch gallery' });
+    res.status(500).json({ error: error.message || 'Failed to fetch gallery' });
   }
 });
 
 router.post('/', requireAuth, async (req, res) => {
   try {
-    const { data, sha } = await readFile(DATA_PATH);
-    const gallery = data || { categories: [], items: [] };
+    if (!supabase) throw new Error("Supabase is not configured");
     const newItem = req.body;
     
-    if (!newItem.id) {
-       newItem.id = Date.now(); // simple unique id
-    }
+    // Convert id if passed as timestamp string/number (our old format), otherwise let serial handle it.
+    // Actually, in Supabase we use SERIAL for id, so we delete id from payload
+    delete newItem.id;
 
-    gallery.items.push(newItem);
-    await writeFile(DATA_PATH, gallery, sha, `Add gallery item: ${newItem.title}`);
-    res.status(201).json(newItem);
+    const { data, error } = await supabase.from('gallery_items').insert([newItem]).select().single();
+    if (error) throw error;
+    
+    res.status(201).json(data);
   } catch (error) {
-    res.status(500).json({ error: 'Failed to add gallery item' });
+    res.status(500).json({ error: error.message || 'Failed to add gallery item' });
   }
 });
 
 router.put('/:id', requireAuth, async (req, res) => {
   try {
-    const id = parseInt(req.params.id) || req.params.id; // handle number or string
-    const { data, sha } = await readFile(DATA_PATH);
-    const gallery = data || { categories: [], items: [] };
+    if (!supabase) throw new Error("Supabase is not configured");
+    const { id } = req.params;
     
-    const index = gallery.items.findIndex(i => i.id == id);
-    if (index === -1) return res.status(404).json({ error: 'Item not found' });
-
-    gallery.items[index] = { ...gallery.items[index], ...req.body, id }; 
-    await writeFile(DATA_PATH, gallery, sha, `Update gallery item: ${id}`);
-    res.json(gallery.items[index]);
+    const { data, error } = await supabase.from('gallery_items').update(req.body).eq('id', id).select().single();
+    if (error) throw error;
+    
+    res.json(data);
   } catch (error) {
-    res.status(500).json({ error: 'Failed to update gallery item' });
+    res.status(500).json({ error: error.message || 'Failed to update gallery item' });
   }
 });
 
 router.delete('/:id', requireAuth, async (req, res) => {
   try {
-    const id = parseInt(req.params.id) || req.params.id;
-    const { data, sha } = await readFile(DATA_PATH);
-    const gallery = data || { categories: [], items: [] };
+    if (!supabase) throw new Error("Supabase is not configured");
+    const { id } = req.params;
     
-    gallery.items = gallery.items.filter(i => i.id != id);
-    await writeFile(DATA_PATH, gallery, sha, `Delete gallery item: ${id}`);
+    const { error } = await supabase.from('gallery_items').delete().eq('id', id);
+    if (error) throw error;
+    
     res.json({ success: true });
   } catch (error) {
-    res.status(500).json({ error: 'Failed to delete gallery item' });
+    res.status(500).json({ error: error.message || 'Failed to delete gallery item' });
   }
 });
 
 // Category endpoints
 router.post('/categories', requireAuth, async (req, res) => {
   try {
+    if (!supabase) throw new Error("Supabase is not configured");
     const { category } = req.body;
-    const { data, sha } = await readFile(DATA_PATH);
-    const gallery = data || { categories: [], items: [] };
     
-    if (!gallery.categories.includes(category)) {
-      gallery.categories.push(category);
-      await writeFile(DATA_PATH, gallery, sha, `Add gallery category: ${category}`);
-    }
-    res.json(gallery.categories);
+    const { error } = await supabase.from('gallery_categories').insert([{ name: category }]);
+    // Ignore duplicate key errors if category already exists
+    if (error && error.code !== '23505') throw error;
+    
+    // Return all categories
+    const { data } = await supabase.from('gallery_categories').select('name');
+    res.json(data.map(c => c.name));
   } catch (error) {
-    res.status(500).json({ error: 'Failed to add category' });
+    res.status(500).json({ error: error.message || 'Failed to add category' });
   }
 });
 
 router.delete('/categories/:name', requireAuth, async (req, res) => {
   try {
+    if (!supabase) throw new Error("Supabase is not configured");
     const { name } = req.params;
-    const { data, sha } = await readFile(DATA_PATH);
-    const gallery = data || { categories: [], items: [] };
     
-    gallery.categories = gallery.categories.filter(c => c !== name);
-    // Optional: could also update/remove category from items here
-    await writeFile(DATA_PATH, gallery, sha, `Delete gallery category: ${name}`);
-    res.json(gallery.categories);
+    const { error } = await supabase.from('gallery_categories').delete().eq('name', name);
+    if (error) throw error;
+    
+    // Return all categories
+    const { data } = await supabase.from('gallery_categories').select('name');
+    res.json(data.map(c => c.name));
   } catch (error) {
-    res.status(500).json({ error: 'Failed to delete category' });
+    res.status(500).json({ error: error.message || 'Failed to delete category' });
   }
 });
 

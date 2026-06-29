@@ -1,66 +1,63 @@
 import express from 'express';
-import { readFile, writeFile } from '../utils/github.js';
+import supabase from '../utils/supabase.js';
 import { requireAuth } from '../middleware/auth.js';
 
 const router = express.Router();
-const DATA_PATH = 'src/data/rooms.json';
 
 router.get('/', async (req, res) => {
   try {
-    const { data } = await readFile(DATA_PATH);
+    if (!supabase) throw new Error("Supabase is not configured");
+    const { data, error } = await supabase.from('rooms').select('*').order('created_at', { ascending: true });
+    if (error) throw error;
     res.json(data || []);
   } catch (error) {
-    res.status(500).json({ error: 'Failed to fetch rooms' });
+    res.status(500).json({ error: error.message || 'Failed to fetch rooms' });
   }
 });
 
 router.post('/', requireAuth, async (req, res) => {
   try {
-    const { data, sha } = await readFile(DATA_PATH);
-    const rooms = data || [];
+    if (!supabase) throw new Error("Supabase is not configured");
     const newRoom = req.body;
     
-    // Simple id generation if not provided
     if (!newRoom.id) {
        newRoom.id = newRoom.name.toLowerCase().replace(/[^a-z0-9]+/g, '-');
     }
 
-    rooms.push(newRoom);
-    await writeFile(DATA_PATH, rooms, sha, `Add room: ${newRoom.name}`);
-    res.status(201).json(newRoom);
+    const { data, error } = await supabase.from('rooms').insert([newRoom]).select().single();
+    if (error) throw error;
+    
+    res.status(201).json(data);
   } catch (error) {
-    res.status(500).json({ error: 'Failed to add room' });
+    res.status(500).json({ error: error.message || 'Failed to add room' });
   }
 });
 
 router.put('/:id', requireAuth, async (req, res) => {
   try {
+    if (!supabase) throw new Error("Supabase is not configured");
     const { id } = req.params;
-    const { data, sha } = await readFile(DATA_PATH);
-    const rooms = data || [];
     
-    const index = rooms.findIndex(r => r.id === id);
-    if (index === -1) return res.status(404).json({ error: 'Room not found' });
-
-    rooms[index] = { ...rooms[index], ...req.body, id }; // Keep original ID
-    await writeFile(DATA_PATH, rooms, sha, `Update room: ${id}`);
-    res.json(rooms[index]);
+    const { data, error } = await supabase.from('rooms').update(req.body).eq('id', id).select().single();
+    if (error) throw error;
+    
+    res.json(data);
   } catch (error) {
-    res.status(500).json({ error: 'Failed to update room' });
+    res.status(500).json({ error: error.message || 'Failed to update room' });
   }
 });
 
 router.delete('/:id', requireAuth, async (req, res) => {
   try {
+    if (!supabase) throw new Error("Supabase is not configured");
     const { id } = req.params;
-    const { data, sha } = await readFile(DATA_PATH);
-    let rooms = data || [];
     
-    rooms = rooms.filter(r => r.id !== id);
-    await writeFile(DATA_PATH, rooms, sha, `Delete room: ${id}`);
+    const { error } = await supabase.from('rooms').delete().eq('id', id);
+    if (error) throw error;
+    
     res.json({ success: true });
   } catch (error) {
-    res.status(500).json({ error: 'Failed to delete room' });
+    res.status(500).json({ error: error.message || 'Failed to delete room' });
   }
 });
 
