@@ -7,8 +7,9 @@
  */
 export function buildWhatsAppLink(phoneNumber, message, config = {}) {
   // Use fallback from siteConfig if not provided
-  const numberToUse = phoneNumber || config.whatsappNumber;
-  const messageToUse = message || config.whatsappDefaultMessage;
+  const safeConfig = config || {};
+  const numberToUse = phoneNumber || safeConfig.whatsappNumber;
+  const messageToUse = message || safeConfig.whatsappDefaultMessage;
   
   // Clean phone number (remove non-digits)
   const cleanNumber = String(numberToUse || "").replace(/\D/g, "");

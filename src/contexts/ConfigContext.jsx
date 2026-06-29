@@ -1,6 +1,7 @@
 import { createContext, useState, useEffect, useContext } from 'react';
 import api from '../lib/api';
 import { Loader2 } from 'lucide-react';
+import defaultConfig from '../data/siteConfig.json';
 
 const ConfigContext = createContext();
 
@@ -15,7 +16,9 @@ export const ConfigProvider = ({ children }) => {
       const res = await api.get('/config');
       setConfig(res.data);
     } catch (err) {
-      console.error("Failed to load config:", err);
+      console.error("Failed to load config from API, using fallback:", err);
+      // Fallback to local JSON if API fails (e.g. on Vercel before DB is ready or if offline)
+      setConfig(defaultConfig);
     } finally {
       setIsLoading(false);
     }
