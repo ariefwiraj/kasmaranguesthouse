@@ -1,30 +1,70 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { X, Image as ImageIcon, LayoutGrid, ChevronLeft, ChevronRight } from "lucide-react";
-import { galleryData } from "../../data/gallery";
+import { X, Image as ImageIcon, LayoutGrid, ChevronLeft, ChevronRight, Edit2, Trash2, Plus, Loader2 } from "lucide-react";
+import api from "../../lib/api";
+import { useAuth } from "../../contexts/AuthContext";
+import GalleryFormModal from "../admin/GalleryFormModal";
+import ConfirmDialog from "../admin/ConfirmDialog";
+import CategoryManager from "../admin/CategoryManager";
 
 export default function Gallery() {
   const [activeTab, setActiveTab] = useState("Semua");
   const [browserModalOpen, setBrowserModalOpen] = useState(false);
   const [browserCategory, setBrowserCategory] = useState("Semua");
-
   const [lightboxIndex, setLightboxIndex] = useState(null);
 
-  const categories = ["Semua", ...new Set(galleryData.map(item => item.category))];
+  // Data states
+  const [galleryItems, setGalleryItems] = useState([]);
+  const [categoriesData, setCategoriesData] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
+
+  // Admin states
+  const { isAuthenticated } = useAuth();
+  const [isFormOpen, setIsFormOpen] = useState(false);
+  const [editingItem, setEditingItem] = useState(null);
+  const [deletingItemId, setDeletingItemId] = useState(null);
+
+  const fetchGallery = async () => {
+    setIsLoading(true);
+    try {
+      const res = await api.get('/gallery');
+      setGalleryItems(res.data.items || []);
+      setCategoriesData(res.data.categories || []);
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchGallery();
+  }, []);
+
+  const handleDeleteItem = async () => {
+    try {
+      await api.delete(`/gallery/${deletingItemId}`);
+      fetchGallery();
+    } catch (err) {
+      alert('Gagal menghapus foto');
+    }
+  };
+
+  const categories = ["Semua", ...categoriesData];
 
   const filteredData = useMemo(() => {
-    if (activeTab === "Semua") return galleryData;
-    return galleryData.filter(item => item.category === activeTab);
-  }, [activeTab]);
+    if (activeTab === "Semua") return galleryItems;
+    return galleryItems.filter(item => item.category === activeTab);
+  }, [activeTab, galleryItems]);
 
   const browserFilteredData = useMemo(() => {
-    if (browserCategory === "Semua") return galleryData;
-    return galleryData.filter(item => item.category === browserCategory);
-  }, [browserCategory]);
+    if (browserCategory === "Semua") return galleryItems;
+    return galleryItems.filter(item => item.category === browserCategory);
+  }, [browserCategory, galleryItems]);
 
   const getCategoryCount = (cat) => {
-    if (cat === "Semua") return galleryData.length;
-    return galleryData.filter(item => item.category === cat).length;
+    if (cat === "Semua") return galleryItems.length;
+    return galleryItems.filter(item => item.category === cat).length;
   };
 
   const openBrowser = (category = activeTab) => {
@@ -54,8 +94,8 @@ export default function Gallery() {
   const remainingCount = filteredData.length - 6;
 
   return (
-    <section id="gallery" className="py-20 md:py-28 bg-white">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6">
+    <section id="gallery" className="py-20 md:py-28 bg-gradient-to-b from-white to-primary/5 relative">
+      <div className="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-12 xl:px-16 2xl:px-24">
         
         {/* Header */}
         <div className="text-center max-w-3xl mx-auto mb-10">
@@ -71,6 +111,23 @@ export default function Gallery() {
             Jelajahi setiap sudut kenyamanan di Kasmaran Guest House Syariah.
           </p>
         </div>
+
+        {isAuthenticated && (
+          <div className="mb-10">
+            <CategoryManager 
+              categories={categoriesData} 
+              onCategoriesChange={(newCats) => setCategoriesData(newCats)} 
+            />
+            <div className="flex justify-center mb-6">
+              <button 
+                onClick={() => { setEditingItem(null); setIsFormOpen(true); }}
+                className="flex items-center gap-2 bg-primary text-white px-6 py-2.5 rounded-full text-sm font-medium hover:bg-primary/90 transition-colors shadow-md"
+              >
+                <Plus className="w-4 h-4" /> Tambah Foto Galeri
+              </button>
+            </div>
+          </div>
+        )}
 
         {/* Category Tabs (Landing Page) */}
         <div className="flex flex-wrap justify-center gap-2 mb-10">
@@ -89,9 +146,11 @@ export default function Gallery() {
           ))}
         </div>
 
-        {/* Grid Preview */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 md:gap-6">
-          <AnimatePresence mode="popLayout">
+        {isLoading ? (
+          <div className="flex justify-center py-20"><Loader2 className="w-10 h-10 animate-spin text-primary" /></div>
+        ) : (
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 md:gap-6">
+            <AnimatePresence mode="popLayout">
             {visibleImages.map((item, idx) => {
               const isLastVisible = idx === 5 && hasMore;
               return (
@@ -103,8 +162,19 @@ export default function Gallery() {
                   exit={{ opacity: 0, scale: 0.95 }}
                   transition={{ duration: 0.3 }}
                   className="relative aspect-square md:aspect-[4/3] rounded-xl overflow-hidden group cursor-pointer bg-muted"
-                  onClick={() => openBrowser(activeTab)}
+                  onClick={() => !isAuthenticated && openBrowser(activeTab)}
                 >
+                  {/* Edit Overlay */}
+                  {isAuthenticated && (
+                    <div className="absolute top-3 left-3 z-20 flex gap-2">
+                      <button onClick={(e) => { e.stopPropagation(); setEditingItem(item); setIsFormOpen(true); }} className="p-2 bg-white/90 backdrop-blur text-primary rounded-lg shadow hover:bg-primary hover:text-white transition-colors">
+                        <Edit2 className="w-4 h-4" />
+                      </button>
+                      <button onClick={(e) => { e.stopPropagation(); setDeletingItemId(item.id); }} className="p-2 bg-white/90 backdrop-blur text-red-500 rounded-lg shadow hover:bg-red-500 hover:text-white transition-colors">
+                        <Trash2 className="w-4 h-4" />
+                      </button>
+                    </div>
+                  )}
                   {item.url ? (
                     <img 
                       src={item.url} 
@@ -137,6 +207,7 @@ export default function Gallery() {
             })}
           </AnimatePresence>
         </div>
+        )}
 
         <div className="mt-10 text-center">
            <button
@@ -153,7 +224,16 @@ export default function Gallery() {
       {/* Gallery Browser Modal (OTA Style) */}
       <AnimatePresence>
         {browserModalOpen && (
-          <div className="fixed inset-0 z-[110] flex items-center justify-center p-0 md:p-6 bg-black/60 backdrop-blur-sm">
+          <div className="fixed inset-0 z-[110] flex items-center justify-center p-0 md:p-6">
+            {/* Backdrop for closing */}
+            <motion.div 
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="absolute inset-0 bg-black/60 backdrop-blur-sm"
+              onClick={closeBrowser}
+            />
+
             <motion.div 
               initial={{ opacity: 0, y: 30 }}
               animate={{ opacity: 1, y: 0 }}
@@ -182,9 +262,19 @@ export default function Gallery() {
                     {browserFilteredData.map((item, idx) => (
                       <div 
                         key={`${item.id}-${idx}`} 
-                        onClick={() => setLightboxIndex(idx)}
+                        onClick={() => !isAuthenticated && setLightboxIndex(idx)}
                         className="relative aspect-[4/3] rounded-lg overflow-hidden bg-white border border-border/50 group shadow-sm hover:shadow-md transition-all hover:border-primary/50 cursor-pointer"
                       >
+                        {isAuthenticated && (
+                          <div className="absolute top-2 left-2 z-20 flex flex-col gap-1">
+                            <button onClick={(e) => { e.stopPropagation(); setEditingItem(item); setIsFormOpen(true); }} className="p-1.5 bg-white/90 text-primary rounded shadow hover:bg-primary hover:text-white">
+                              <Edit2 className="w-3.5 h-3.5" />
+                            </button>
+                            <button onClick={(e) => { e.stopPropagation(); setDeletingItemId(item.id); }} className="p-1.5 bg-white/90 text-red-500 rounded shadow hover:bg-red-500 hover:text-white">
+                              <Trash2 className="w-3.5 h-3.5" />
+                            </button>
+                          </div>
+                        )}
                         {item.url ? (
                           <img 
                             src={item.url} 
@@ -243,6 +333,7 @@ export default function Gallery() {
                     animate={{ opacity: 1 }}
                     exit={{ opacity: 0 }}
                     className="absolute inset-0 z-50 bg-black flex flex-col"
+                    onClick={() => setLightboxIndex(null)}
                   >
                     {/* Lightbox Header */}
                     <div className="flex-shrink-0 h-14 md:h-16 flex justify-between items-center px-4 md:px-6 bg-black/50 z-20 absolute top-0 left-0 right-0">
@@ -265,10 +356,14 @@ export default function Gallery() {
                         <img 
                           src={browserFilteredData[lightboxIndex].url}
                           alt={browserFilteredData[lightboxIndex].title}
-                          className="w-full h-full object-contain"
+                          className="w-full h-full object-contain cursor-default"
+                          onClick={(e) => e.stopPropagation()}
                         />
                       ) : (
-                        <div className="w-full h-full flex flex-col items-center justify-center text-white/50">
+                        <div 
+                          className="w-full h-full flex flex-col items-center justify-center text-white/50 cursor-default"
+                          onClick={(e) => e.stopPropagation()}
+                        >
                           <ImageIcon size={64} className="mb-4 opacity-50" />
                           <span className="font-medium text-xl">[ {browserFilteredData[lightboxIndex].title} ]</span>
                         </div>
@@ -297,6 +392,22 @@ export default function Gallery() {
         )}
       </AnimatePresence>
 
+      <GalleryFormModal 
+        isOpen={isFormOpen}
+        onClose={() => setIsFormOpen(false)}
+        initialData={editingItem}
+        categories={categoriesData}
+        onSave={fetchGallery}
+      />
+
+      <ConfirmDialog 
+        isOpen={!!deletingItemId}
+        onClose={() => setDeletingItemId(null)}
+        onConfirm={handleDeleteItem}
+        title="Hapus Foto"
+        message="Yakin ingin menghapus foto ini dari galeri?"
+        isDeleting
+      />
     </section>
   );
 }

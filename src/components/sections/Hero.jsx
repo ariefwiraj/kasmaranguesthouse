@@ -1,18 +1,20 @@
 import { motion } from "framer-motion";
-import { siteConfig } from "../../data/siteConfig";
+import { useConfig } from "../../contexts/ConfigContext";
 import { buildWhatsAppLink } from "../../lib/whatsapp";
 import heroImg from "../../assets/images/hero.png";
 import { ChevronDown } from "lucide-react";
 
 export default function Hero() {
-  const whatsappUrl = buildWhatsAppLink();
+  const { config: siteConfig } = useConfig();
+  const whatsappUrl = buildWhatsAppLink(null, null, siteConfig);
 
   const handleScrollToRooms = (e) => {
     e.preventDefault();
     const roomsSection = document.getElementById("rooms");
     if (roomsSection) {
+      const topOffset = roomsSection.getBoundingClientRect().top + window.scrollY - 80;
       window.scrollTo({
-        top: roomsSection.offsetTop - 80,
+        top: topOffset,
         behavior: "smooth"
       });
     }

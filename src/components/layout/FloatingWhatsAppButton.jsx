@@ -2,9 +2,11 @@ import { useEffect, useState } from "react";
 import { MessageCircle } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { buildWhatsAppLink } from "../../lib/whatsapp";
+import { useConfig } from "../../contexts/ConfigContext";
 
 export default function FloatingWhatsAppButton() {
   const [isVisible, setIsVisible] = useState(false);
+  const { config: siteConfig } = useConfig();
 
   useEffect(() => {
     // Tampilkan button setelah scroll sedikit atau delay
@@ -27,7 +29,7 @@ export default function FloatingWhatsAppButton() {
     };
   }, []);
 
-  const whatsappUrl = buildWhatsAppLink();
+  const whatsappUrl = buildWhatsAppLink(null, null, siteConfig);
 
   return (
     <AnimatePresence>

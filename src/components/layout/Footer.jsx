@@ -1,9 +1,13 @@
-import { siteConfig } from "../../data/siteConfig";
+import { useConfig } from "../../contexts/ConfigContext";
 
 export default function Footer() {
+  const { config: siteConfig } = useConfig();
+  
+  if (!siteConfig) return null;
+
   return (
     <footer className="bg-[#1A1A1A] text-white pt-16 pb-8">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6">
+      <div className="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-12 xl:px-16 2xl:px-24">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-10 lg:gap-16">
           
           {/* Column 1: Info */}

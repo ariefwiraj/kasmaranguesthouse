@@ -2,7 +2,8 @@ import { useState, useEffect } from "react";
 import { Menu, X } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { buildWhatsAppLink } from "../../lib/whatsapp";
-import { siteConfig } from "../../data/siteConfig";
+import { useConfig } from "../../contexts/ConfigContext";
+import { useAuth } from "../../contexts/AuthContext";
 
 import logoDark from "../../assets/images/LOGO.svg";
 import logoWhite from "../../assets/images/LOGO-WHITE(2).svg";
@@ -11,6 +12,8 @@ export default function Navbar() {
   const [isScrolled, setIsScrolled] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [activeSection, setActiveSection] = useState("home");
+  const { config: siteConfig } = useConfig();
+  const { isAuthenticated } = useAuth();
 
   const navLinks = [
     { name: "Tentang", href: "#about" },
@@ -30,9 +33,14 @@ export default function Navbar() {
       
       for (const section of sections) {
         const element = document.getElementById(section);
-        if (element && window.scrollY >= element.offsetTop - 100) {
+        if (element && window.scrollY >= element.offsetTop - 200) {
           current = section;
         }
+      }
+
+      // If scrolled to the very bottom, forcefully highlight the last section
+      if (window.innerHeight + window.scrollY >= document.documentElement.scrollHeight - 50) {
+        current = "location";
       }
       
       if (current) setActiveSection(current);
@@ -47,25 +55,28 @@ export default function Navbar() {
     const targetId = href.substring(1);
     const element = document.getElementById(targetId);
     if (element) {
+      const topOffset = element.getBoundingClientRect().top + window.scrollY - 80;
       window.scrollTo({
-        top: element.offsetTop - 80,
+        top: topOffset,
         behavior: "smooth",
       });
       setMobileMenuOpen(false);
     }
   };
 
-  const whatsappUrl = buildWhatsAppLink();
+  const whatsappUrl = buildWhatsAppLink(null, null, siteConfig);
 
   return (
     <header
-      className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
+      className={`fixed left-0 right-0 z-50 transition-all duration-300 ${
+        isAuthenticated ? "top-[36px]" : "top-0"
+      } ${
         isScrolled || mobileMenuOpen
           ? "bg-white shadow-sm py-3"
           : "bg-transparent py-3"
       }`}
     >
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 flex justify-between items-center min-h-[60px]">
+      <div className="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-12 xl:px-16 2xl:px-24 flex justify-between items-center min-h-[60px]">
         {/* Logo */}
         <a 
           href="#home" 

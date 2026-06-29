@@ -7,10 +7,15 @@ import Rooms from "../components/sections/Rooms";
 import Facilities from "../components/sections/Facilities";
 import Gallery from "../components/sections/Gallery";
 import LocationInfo from "../components/sections/LocationInfo";
+import AdminToolbar from "../components/admin/AdminToolbar";
+import { useAuth } from "../contexts/AuthContext";
 
 export default function Home() {
+  const { isAuthenticated } = useAuth();
+
   return (
     <>
+      {isAuthenticated && <AdminToolbar />}
       <Navbar />
       <main>
         <Hero />

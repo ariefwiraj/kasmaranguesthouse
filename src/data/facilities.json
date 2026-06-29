@@ -1,0 +1,50 @@
+[
+  {
+    "id": "wifi",
+    "name": "WiFi Gratis",
+    "icon": "Wifi",
+    "description": "Akses internet untuk kenyamanan tamu selama menginap."
+  },
+  {
+    "id": "ac",
+    "name": "AC",
+    "icon": "Wind",
+    "description": "Penyejuk ruangan di setiap kamar."
+  },
+  {
+    "id": "tv",
+    "name": "TV",
+    "icon": "Tv",
+    "description": "Televisi dengan saluran menarik."
+  },
+  {
+    "id": "bathroom",
+    "name": "Kamar Mandi Dalam",
+    "icon": "Bath",
+    "description": "Kamar mandi pribadi untuk privasi Anda."
+  },
+  {
+    "id": "hot-water",
+    "name": "Air Panas",
+    "icon": "ThermometerSun",
+    "description": "Fasilitas air panas untuk mandi yang nyaman."
+  },
+  {
+    "id": "parking",
+    "name": "Area Parkir",
+    "icon": "SquareParking",
+    "description": "Tempat parkir yang aman dan luas."
+  },
+  {
+    "id": "lounge",
+    "name": "Area Bersantai",
+    "icon": "Coffee",
+    "description": "Area bersama untuk bersantai dan ngobrol."
+  },
+  {
+    "id": "reception",
+    "name": "Resepsionis",
+    "icon": "ConciergeBell",
+    "description": "Layanan resepsionis ramah melayani Anda."
+  }
+]

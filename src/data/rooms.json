@@ -1,0 +1,181 @@
+[
+  {
+    "id": "standard-room",
+    "name": "Standard Room",
+    "startingPrice": "Rp 250.000",
+    "capacity": "2 Tamu",
+    "features": [
+      "AC",
+      "WiFi",
+      "TV",
+      "Kamar Mandi Dalam"
+    ],
+    "image": "/uploads/rooms/main-1782720760556-bedroomsuperior.webp",
+    "gallery": [
+      {
+        "id": 1,
+        "title": "Kamar Tidur",
+        "url": "/uploads/rooms/gal-0-1782720781439-bedroomsuperior2.webp"
+      },
+      {
+        "id": 2,
+        "title": "Wastafel",
+        "url": "/uploads/rooms/room-1.jpg"
+      },
+      {
+        "id": 3,
+        "title": "Kamar Mandi",
+        "url": "/uploads/rooms/room-2.jpg"
+      }
+    ],
+    "roomInfo": [
+      {
+        "icon": "Maximize",
+        "label": "12.0 m²"
+      },
+      {
+        "icon": "BedDouble",
+        "label": "1 queen bed"
+      },
+      {
+        "icon": "Eye",
+        "label": "Pemandangan Kota"
+      },
+      {
+        "icon": "Users",
+        "label": "2 tamu"
+      }
+    ],
+    "facilities": [
+      "AC",
+      "Air minum kemasan cuma-cuma",
+      "TV Layar Datar",
+      "Kamar Mandi Dalam",
+      "Shower Air Dingin/Panas",
+      "Free WiFi"
+    ],
+    "whatsappMessage": "Halo, saya tertarik dengan Standard Room di Kasmaran Guest House Syariah. Mohon info ketersediaan."
+  },
+  {
+    "id": "deluxe-room",
+    "name": "Deluxe Room",
+    "startingPrice": "Rp 350.000",
+    "capacity": "2 Tamu",
+    "features": [
+      "AC",
+      "WiFi",
+      "TV",
+      "Kamar Mandi Dalam",
+      "Air Panas",
+      "Lebih Luas"
+    ],
+    "image": "/uploads/rooms/room-3.jpg",
+    "gallery": [
+      {
+        "id": 1,
+        "title": "Kamar Tidur Utama",
+        "url": "/uploads/rooms/room-3.jpg"
+      },
+      {
+        "id": 2,
+        "title": "Wastafel",
+        "url": "/uploads/rooms/room-1.jpg"
+      },
+      {
+        "id": 3,
+        "title": "Kamar Mandi",
+        "url": "/uploads/rooms/room-2.jpg"
+      }
+    ],
+    "roomInfo": [
+      {
+        "icon": "Maximize",
+        "label": "18.0 m²"
+      },
+      {
+        "icon": "BedDouble",
+        "label": "1 king bed"
+      },
+      {
+        "icon": "Eye",
+        "label": "Pemandangan Taman"
+      },
+      {
+        "icon": "Users",
+        "label": "2 tamu"
+      }
+    ],
+    "facilities": [
+      "AC",
+      "Air minum kemasan cuma-cuma",
+      "TV Layar Datar 40 inch",
+      "Kamar Mandi Dalam",
+      "Shower Air Dingin/Panas",
+      "Area tempat duduk terpisah",
+      "Pembuat kopi / teh",
+      "Free WiFi"
+    ],
+    "whatsappMessage": "Halo, saya tertarik dengan Deluxe Room di Kasmaran Guest House Syariah. Mohon info ketersediaan."
+  },
+  {
+    "id": "family-room",
+    "name": "Family Room",
+    "startingPrice": "Rp 500.000",
+    "capacity": "4 Tamu",
+    "features": [
+      "AC",
+      "WiFi",
+      "TV",
+      "Kamar Mandi Dalam",
+      "Air Panas",
+      "2 Bed Besar"
+    ],
+    "image": "/uploads/rooms/room-3.jpg",
+    "gallery": [
+      {
+        "id": 1,
+        "title": "Kamar Tidur Utama",
+        "url": "/uploads/rooms/room-3.jpg"
+      },
+      {
+        "id": 2,
+        "title": "Kamar Mandi",
+        "url": "/uploads/rooms/room-2.jpg"
+      },
+      {
+        "id": 3,
+        "title": "Wastafel",
+        "url": "/uploads/rooms/room-1.jpg"
+      }
+    ],
+    "roomInfo": [
+      {
+        "icon": "Maximize",
+        "label": "24.0 m²"
+      },
+      {
+        "icon": "BedDouble",
+        "label": "2 queen bed"
+      },
+      {
+        "icon": "Eye",
+        "label": "Pemandangan Taman"
+      },
+      {
+        "icon": "Users",
+        "label": "4 tamu"
+      }
+    ],
+    "facilities": [
+      "AC",
+      "Air minum kemasan cuma-cuma",
+      "TV Layar Datar 43 inch",
+      "Kamar Mandi Dalam Luas",
+      "Shower Air Dingin/Panas",
+      "Area makan kecil",
+      "Pembuat kopi / teh",
+      "Free WiFi"
+    ],
+    "whatsappMessage": "Halo, saya tertarik dengan Family Room di Kasmaran Guest House Syariah. Mohon info ketersediaan."
+  }
+]

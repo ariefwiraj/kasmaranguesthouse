@@ -1,0 +1,58 @@
+{
+  "categories": [
+    "Fasilitas Umum",
+    "Kamar",
+    "Kamar Mandi",
+    "Eksterior"
+  ],
+  "items": [
+    {
+      "id": 1,
+      "url": "/uploads/gallery/about.jpg",
+      "title": "Area Lobi Depan",
+      "category": "Fasilitas Umum"
+    },
+    {
+      "id": 2,
+      "url": "/uploads/rooms/room-4.jpg",
+      "title": "Standard Room",
+      "category": "Kamar"
+    },
+    {
+      "id": 3,
+      "url": "/uploads/rooms/room-3.jpg",
+      "title": "Deluxe Room",
+      "category": "Kamar"
+    },
+    {
+      "id": 4,
+      "url": "/uploads/rooms/room-2.jpg",
+      "title": "Kamar Mandi Premium",
+      "category": "Kamar Mandi"
+    },
+    {
+      "id": 5,
+      "url": "/uploads/rooms/room-1.jpg",
+      "title": "Wastafel",
+      "category": "Kamar Mandi"
+    },
+    {
+      "id": 6,
+      "url": "/uploads/gallery/gal-1782720946941-hero.png",
+      "title": "Area Parkir Luas",
+      "category": "Fasilitas Umum"
+    },
+    {
+      "id": 7,
+      "url": null,
+      "title": "Koridor Tamu",
+      "category": "Fasilitas Umum"
+    },
+    {
+      "id": 8,
+      "url": null,
+      "title": "Tampak Depan Bangunan",
+      "category": "Eksterior"
+    }
+  ]
+}

@@ -1,14 +1,50 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Users, X, ChevronLeft, ChevronRight, Maximize, BedDouble, Eye } from "lucide-react";
+import { Users, X, ChevronLeft, ChevronRight, Maximize, BedDouble, Eye, Edit2, Trash2, Plus, Loader2 } from "lucide-react";
 import useEmblaCarousel from "embla-carousel-react";
-import { rooms } from "../../data/rooms";
 import { buildWhatsAppLink } from "../../lib/whatsapp";
+import api from "../../lib/api";
+import { useAuth } from "../../contexts/AuthContext";
+import RoomFormModal from "../admin/RoomFormModal";
+import ConfirmDialog from "../admin/ConfirmDialog";
 
 export default function Rooms() {
   const [selectedRoom, setSelectedRoom] = useState(null);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [emblaRef, emblaApi] = useEmblaCarousel({ loop: false, align: "start" });
+  const [rooms, setRooms] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
+  
+  // Admin states
+  const { isAuthenticated } = useAuth();
+  const [isFormOpen, setIsFormOpen] = useState(false);
+  const [editingRoom, setEditingRoom] = useState(null);
+  const [deletingRoomId, setDeletingRoomId] = useState(null);
+
+  const fetchRooms = async () => {
+    setIsLoading(true);
+    try {
+      const res = await api.get('/rooms');
+      setRooms(res.data);
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchRooms();
+  }, []);
+
+  const handleDeleteRoom = async () => {
+    try {
+      await api.delete(`/rooms/${deletingRoomId}`);
+      fetchRooms();
+    } catch (err) {
+      alert('Gagal menghapus kamar');
+    }
+  };
 
   const getIcon = (iconName) => {
     switch (iconName) {
@@ -21,7 +57,7 @@ export default function Rooms() {
   };
   return (
     <section id="rooms" className="py-20 md:py-28 bg-[#FAF7F2]">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6">
+      <div className="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-12 xl:px-16 2xl:px-24">
         
         <div className="text-center max-w-3xl mx-auto mb-16">
           <div className="flex items-center justify-center gap-4 mb-4">
@@ -37,32 +73,58 @@ export default function Rooms() {
           </p>
         </div>
 
-        <div className="flex justify-end gap-3 mb-6 pr-2 sm:pr-0">
-          <button 
-            onClick={() => emblaApi?.scrollPrev()}
-            className="w-10 h-10 rounded-full border-2 border-primary/20 text-primary flex items-center justify-center hover:bg-primary hover:border-primary hover:text-white transition-all shadow-sm"
-          >
-            <ChevronLeft size={20} />
-          </button>
-          <button 
-            onClick={() => emblaApi?.scrollNext()}
-            className="w-10 h-10 rounded-full border-2 border-primary/20 text-primary flex items-center justify-center hover:bg-primary hover:border-primary hover:text-white transition-all shadow-sm"
-          >
-            <ChevronRight size={20} />
-          </button>
+        <div className="flex justify-between items-center mb-6 px-2 sm:px-0">
+          <div>
+            {isAuthenticated && (
+              <button 
+                onClick={() => { setEditingRoom(null); setIsFormOpen(true); }}
+                className="flex items-center gap-2 bg-primary text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-primary/90 transition-colors shadow-sm"
+              >
+                <Plus className="w-4 h-4" /> Tambah Kamar
+              </button>
+            )}
+          </div>
+          <div className="flex gap-3">
+            <button 
+              onClick={() => emblaApi?.scrollPrev()}
+              className="w-10 h-10 rounded-full border-2 border-primary/20 text-primary flex items-center justify-center hover:bg-primary hover:border-primary hover:text-white transition-all shadow-sm"
+            >
+              <ChevronLeft size={20} />
+            </button>
+            <button 
+              onClick={() => emblaApi?.scrollNext()}
+              className="w-10 h-10 rounded-full border-2 border-primary/20 text-primary flex items-center justify-center hover:bg-primary hover:border-primary hover:text-white transition-all shadow-sm"
+            >
+              <ChevronRight size={20} />
+            </button>
+          </div>
         </div>
 
-        <div className="overflow-hidden pb-8 -mx-4 px-4 sm:mx-0 sm:px-0" ref={emblaRef}>
-          <div className="flex -ml-4 sm:-ml-6 md:-ml-8 cursor-grab active:cursor-grabbing">
-            {rooms.map((room, idx) => (
-              <div className="flex-[0_0_100%] sm:flex-[0_0_50%] lg:flex-[0_0_33.333%] pl-4 sm:pl-6 md:pl-8 min-w-0" key={room.id}>
-                <motion.div
-                  initial={{ opacity: 0, y: 30 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  viewport={{ once: true, margin: "-50px" }}
-                  transition={{ duration: 0.5, delay: idx * 0.1 }}
-                  className="bg-white rounded-2xl overflow-hidden shadow-sm hover:shadow-xl transition-all duration-300 border border-border group flex flex-col h-full"
-                >
+        {isLoading ? (
+          <div className="flex justify-center py-20"><Loader2 className="w-10 h-10 animate-spin text-primary" /></div>
+        ) : (
+          <div className="overflow-hidden pb-8 -mx-4 px-4 sm:mx-0 sm:px-0" ref={emblaRef}>
+            <div className="flex -ml-4 sm:-ml-6 md:-ml-8 cursor-grab active:cursor-grabbing">
+              {rooms.map((room, idx) => (
+                <div className="flex-[0_0_100%] sm:flex-[0_0_50%] lg:flex-[0_0_33.333%] pl-4 sm:pl-6 md:pl-8 min-w-0" key={room.id}>
+                  <motion.div
+                    initial={{ opacity: 0, y: 30 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    viewport={{ once: true, amount: 0.2 }}
+                    transition={{ duration: 0.5, delay: idx * 0.1 }}
+                    className="bg-white rounded-2xl overflow-hidden shadow-sm hover:shadow-xl transition-all duration-300 border border-border group flex flex-col h-full relative"
+                  >
+                    {/* Edit Overlay */}
+                    {isAuthenticated && (
+                      <div className="absolute top-4 left-4 z-20 flex gap-2">
+                        <button onClick={() => { setEditingRoom(room); setIsFormOpen(true); }} className="p-2 bg-white/90 backdrop-blur text-primary rounded-lg shadow hover:bg-primary hover:text-white transition-colors">
+                          <Edit2 className="w-4 h-4" />
+                        </button>
+                        <button onClick={() => setDeletingRoomId(room.id)} className="p-2 bg-white/90 backdrop-blur text-red-500 rounded-lg shadow hover:bg-red-500 hover:text-white transition-colors">
+                          <Trash2 className="w-4 h-4" />
+                        </button>
+                      </div>
+                    )}
                   {/* Image Area */}
                   <div className="aspect-[4/3] relative overflow-hidden bg-[#E8E2D9]">
                     {room.image ? (
@@ -127,11 +189,12 @@ export default function Rooms() {
                       </a>
                     </div>
                   </div>
-                </motion.div>
-              </div>
-            ))}
+                  </motion.div>
+                </div>
+              ))}
+            </div>
           </div>
-        </div>
+        )}
         
       </div>
 
@@ -267,6 +330,22 @@ export default function Rooms() {
           </div>
         )}
       </AnimatePresence>
+
+      <RoomFormModal 
+        isOpen={isFormOpen} 
+        onClose={() => setIsFormOpen(false)} 
+        initialData={editingRoom} 
+        onSave={fetchRooms} 
+      />
+      
+      <ConfirmDialog 
+        isOpen={!!deletingRoomId} 
+        onClose={() => setDeletingRoomId(null)} 
+        onConfirm={handleDeleteRoom} 
+        title="Hapus Kamar" 
+        message="Yakin ingin menghapus kamar ini? Perubahan akan langsung disimpan." 
+        isDeleting 
+      />
     </section>
   );
 }
