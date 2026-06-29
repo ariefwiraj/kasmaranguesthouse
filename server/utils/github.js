@@ -4,7 +4,7 @@ import path from 'path';
 
 const GITHUB_TOKEN = process.env.GITHUB_TOKEN;
 const GITHUB_OWNER = process.env.GITHUB_OWNER || 'ariefwiraj';
-const GITHUB_REPO = process.env.GITHUB_REPO || 'kasmaranguesthouse-LandingPage';
+const GITHUB_REPO = process.env.GITHUB_REPO || 'kasmaranguesthouse';
 const GITHUB_BRANCH = process.env.GITHUB_BRANCH || 'main';
 
 const getBaseUrl = () => `https://api.github.com/repos/${GITHUB_OWNER}/${GITHUB_REPO}/contents`;
