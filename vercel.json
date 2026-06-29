@@ -5,7 +5,7 @@
   ],
   "functions": {
     "api/**/*.js": {
-      "includeFiles": ["../src/data/**", "../public/uploads/**"]
+      "includeFiles": "{../src/data/**,../public/uploads/**}"
     }
   }
 }
