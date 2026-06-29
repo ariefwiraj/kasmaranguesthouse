@@ -71,8 +71,8 @@ export default function Footer() {
                 </li>
               )}
               {!siteConfig.whatsappNumber && !siteConfig.email && (
-                <li className="text-white/50 text-sm italic">
-                  Kontak akan segera diperbarui.
+                <li className="text-white/50 text-sm ">
+                  
                 </li>
               )}
             </ul>

@@ -5,6 +5,7 @@ import useEmblaCarousel from "embla-carousel-react";
 import { buildWhatsAppLink } from "../../lib/whatsapp";
 import api from "../../lib/api";
 import { useAuth } from "../../contexts/AuthContext";
+import { useConfig } from "../../contexts/ConfigContext";
 import RoomFormModal from "../admin/RoomFormModal";
 import ConfirmDialog from "../admin/ConfirmDialog";
 
@@ -17,6 +18,7 @@ export default function Rooms() {
   
   // Admin states
   const { isAuthenticated } = useAuth();
+  const { config: siteConfig } = useConfig();
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [editingRoom, setEditingRoom] = useState(null);
   const [deletingRoomId, setDeletingRoomId] = useState(null);
@@ -180,7 +182,7 @@ export default function Rooms() {
                         Lihat Detail Kamar
                       </button>
                       <a
-                        href={buildWhatsAppLink(null, room.whatsappMessage)}
+                        href={buildWhatsAppLink(null, `Halo, saya tertarik dengan kamar ${room.name} di Kasmaran Guest House Syariah. Mohon info ketersediaan.`, siteConfig)}
                         target="_blank"
                         rel="noreferrer"
                         className="block w-full py-3 text-center rounded-lg bg-primary text-white font-medium hover:bg-primary/90 transition-colors shadow-sm"
@@ -315,7 +317,7 @@ export default function Rooms() {
                     <div className="text-sm font-medium text-foreground mb-1">harga</div>
                     <div className="text-xl font-bold text-primary mb-4">{selectedRoom.startingPrice} <span className="text-sm font-normal text-muted-foreground">/ kamar / malam</span></div>
                     <a
-                      href={buildWhatsAppLink(null, selectedRoom.whatsappMessage)}
+                      href={buildWhatsAppLink(null, `Halo, saya tertarik dengan kamar ${selectedRoom.name} di Kasmaran Guest House Syariah. Mohon info ketersediaan.`, siteConfig)}
                       target="_blank"
                       rel="noreferrer"
                       className="block w-full py-3 rounded-lg bg-primary text-white font-medium hover:bg-primary/90 transition-colors shadow-sm text-center"

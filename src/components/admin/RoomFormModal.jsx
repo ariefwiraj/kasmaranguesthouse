@@ -164,10 +164,7 @@ export default function RoomFormModal({ isOpen, onClose, initialData, onSave }) 
                 <label className="block text-sm font-medium mb-1">Kapasitas (ex: 2 Tamu)</label>
                 <input required type="text" name="capacity" value={formData.capacity} onChange={handleChange} className="w-full border rounded-lg px-3 py-2" />
               </div>
-              <div>
-                <label className="block text-sm font-medium mb-1">Pesan WhatsApp Default</label>
-                <input required type="text" name="whatsappMessage" value={formData.whatsappMessage} onChange={handleChange} className="w-full border rounded-lg px-3 py-2" />
-              </div>
+
             </div>
 
             {/* Main Image */}
