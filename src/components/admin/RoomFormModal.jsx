@@ -3,7 +3,7 @@ import { X, Upload, Save, Loader2, Plus, Trash2 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import api from '../../lib/api';
 
-export default function RoomFormModal({ isOpen, onClose, initialData, onSave }) {
+export default function RoomFormModal({ isOpen, onClose, initialData, onSave, existingRooms = [] }) {
   const [formData, setFormData] = useState({
     id: '', name: '', startingPrice: '', capacity: '', whatsappMessage: '',
     features: [], roomInfo: [], facilities: [], gallery: []
@@ -11,6 +11,11 @@ export default function RoomFormModal({ isOpen, onClose, initialData, onSave }) 
   const [mainImage, setMainImage] = useState(null);
   const [isSaving, setIsSaving] = useState(false);
   const isEditing = !!initialData;
+
+  const uniqueFeatures = Array.from(new Set(existingRooms.flatMap(r => r.features || [])));
+  const uniqueFacilities = Array.from(new Set(existingRooms.flatMap(r => r.facilities || [])));
+  const uniqueInfoLabels = Array.from(new Set(existingRooms.flatMap(r => r.roomInfo?.map(i => i.label) || [])));
+  const uniqueGalleryTitles = Array.from(new Set(existingRooms.flatMap(r => r.gallery?.map(g => g.title) || [])));
 
   useEffect(() => {
     if (isOpen) {
@@ -32,6 +37,16 @@ export default function RoomFormModal({ isOpen, onClose, initialData, onSave }) 
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData(prev => ({ ...prev, [name]: value }));
+  };
+
+  const handlePriceChange = (e) => {
+    let val = e.target.value.replace(/\D/g, ''); // hapus karakter selain angka
+    if (!val) {
+      setFormData(prev => ({ ...prev, startingPrice: '' }));
+      return;
+    }
+    val = parseInt(val, 10).toLocaleString('id-ID').replace(/,/g, '.'); // format titik
+    setFormData(prev => ({ ...prev, startingPrice: `Rp ${val}` }));
   };
 
   const handleArrayChange = (field, index, value, subfield = null) => {
@@ -148,6 +163,19 @@ export default function RoomFormModal({ isOpen, onClose, initialData, onSave }) 
         </div>
 
         <div className="p-6 overflow-y-auto flex-1">
+          <datalist id="featuresList">
+            {uniqueFeatures.map(item => <option key={item} value={item} />)}
+          </datalist>
+          <datalist id="facilitiesList">
+            {uniqueFacilities.map(item => <option key={item} value={item} />)}
+          </datalist>
+          <datalist id="infoLabelsList">
+            {uniqueInfoLabels.map(item => <option key={item} value={item} />)}
+          </datalist>
+          <datalist id="galleryTitlesList">
+            {uniqueGalleryTitles.map(item => <option key={item} value={item} />)}
+          </datalist>
+
           <form id="roomForm" onSubmit={handleSubmit} className="space-y-6">
             
             {/* Basic Info */}
@@ -157,8 +185,8 @@ export default function RoomFormModal({ isOpen, onClose, initialData, onSave }) 
                 <input required type="text" name="name" value={formData.name} onChange={handleChange} className="w-full border rounded-lg px-3 py-2" />
               </div>
               <div>
-                <label className="block text-sm font-medium mb-1">Harga (ex: Rp 250.000)</label>
-                <input required type="text" name="startingPrice" value={formData.startingPrice} onChange={handleChange} className="w-full border rounded-lg px-3 py-2" />
+                <label className="block text-sm font-medium mb-1">Harga (Otomatis)</label>
+                <input required type="text" name="startingPrice" value={formData.startingPrice} onChange={handlePriceChange} className="w-full border rounded-lg px-3 py-2" placeholder="Cukup ketik angka (ex: 250000)" />
               </div>
               <div>
                 <label className="block text-sm font-medium mb-1">Kapasitas (ex: 2 Tamu)</label>
@@ -209,7 +237,7 @@ export default function RoomFormModal({ isOpen, onClose, initialData, onSave }) 
                       <input type="file" accept="image/*" onChange={(e) => handleImageUpload(e, false, index)} className="hidden" />
                     </label>
                     <div className="flex-1">
-                      <input type="text" placeholder="Judul Foto (ex: Kamar Mandi)" value={item.title} onChange={(e) => handleArrayChange('gallery', index, e.target.value, 'title')} className="w-full border rounded-lg px-3 py-2 text-sm" />
+                      <input type="text" list="galleryTitlesList" placeholder="Judul Foto (ex: Kamar Mandi)" value={item.title} onChange={(e) => handleArrayChange('gallery', index, e.target.value, 'title')} className="w-full border rounded-lg px-3 py-2 text-sm" />
                     </div>
                     <button type="button" onClick={() => removeArrayItem('gallery', index)} className="p-2 text-red-500 hover:bg-red-50 rounded-lg"><Trash2 className="w-5 h-5" /></button>
                   </div>
@@ -228,7 +256,7 @@ export default function RoomFormModal({ isOpen, onClose, initialData, onSave }) 
               <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
                 {formData.features.map((feature, index) => (
                   <div key={index} className="flex items-center gap-2">
-                    <input type="text" value={feature} onChange={(e) => handleArrayChange('features', index, e.target.value)} className="w-full border rounded-lg px-2 py-1 text-sm" placeholder="ex: AC" />
+                    <input type="text" list="featuresList" value={feature} onChange={(e) => handleArrayChange('features', index, e.target.value)} className="w-full border rounded-lg px-2 py-1 text-sm" placeholder="ex: AC" />
                     <button type="button" onClick={() => removeArrayItem('features', index)} className="text-red-500"><Trash2 className="w-4 h-4" /></button>
                   </div>
                 ))}
@@ -252,7 +280,7 @@ export default function RoomFormModal({ isOpen, onClose, initialData, onSave }) 
                       <option value="Eye">Eye (Pemandangan)</option>
                       <option value="Users">Users (Kapasitas)</option>
                     </select>
-                    <input type="text" value={info.label} onChange={(e) => handleArrayChange('roomInfo', index, e.target.value, 'label')} className="flex-1 border rounded-lg px-2 py-1 text-sm" placeholder="ex: 12.0 m²" />
+                    <input type="text" list="infoLabelsList" value={info.label} onChange={(e) => handleArrayChange('roomInfo', index, e.target.value, 'label')} className="flex-1 border rounded-lg px-2 py-1 text-sm" placeholder="ex: 12.0 m²" />
                     <button type="button" onClick={() => removeArrayItem('roomInfo', index)} className="text-red-500"><Trash2 className="w-4 h-4" /></button>
                   </div>
                 ))}
@@ -270,7 +298,7 @@ export default function RoomFormModal({ isOpen, onClose, initialData, onSave }) 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
                 {formData.facilities.map((fac, index) => (
                   <div key={index} className="flex items-center gap-2">
-                    <input type="text" value={fac} onChange={(e) => handleArrayChange('facilities', index, e.target.value)} className="w-full border rounded-lg px-2 py-1 text-sm" placeholder="ex: TV Layar Datar" />
+                    <input type="text" list="facilitiesList" value={fac} onChange={(e) => handleArrayChange('facilities', index, e.target.value)} className="w-full border rounded-lg px-2 py-1 text-sm" placeholder="ex: TV Layar Datar" />
                     <button type="button" onClick={() => removeArrayItem('facilities', index)} className="text-red-500"><Trash2 className="w-4 h-4" /></button>
                   </div>
                 ))}

@@ -338,6 +338,7 @@ export default function Rooms() {
         onClose={() => setIsFormOpen(false)} 
         initialData={editingRoom} 
         onSave={fetchRooms} 
+        existingRooms={rooms}
       />
       
       <ConfirmDialog 
