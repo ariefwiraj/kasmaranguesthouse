@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Users, X, ChevronLeft, ChevronRight, Maximize, BedDouble, Eye, Edit2, Trash2, Plus, Loader2 } from "lucide-react";
+import { Users, X, ChevronLeft, ChevronRight, Maximize, BedDouble, Eye, Edit2, Trash2, Plus, Loader2, ArrowLeft, ArrowRight } from "lucide-react";
 import useEmblaCarousel from "embla-carousel-react";
 import { buildWhatsAppLink } from "../../lib/whatsapp";
 import api from "../../lib/api";
@@ -45,6 +45,26 @@ export default function Rooms() {
       fetchRooms();
     } catch (err) {
       alert('Gagal menghapus kamar');
+    }
+  };
+
+  const handleReorder = async (direction, index) => {
+    if (direction === 'left' && index === 0) return;
+    if (direction === 'right' && index === rooms.length - 1) return;
+    
+    const newRooms = [...rooms];
+    const targetIndex = direction === 'left' ? index - 1 : index + 1;
+    
+    // Swap
+    [newRooms[index], newRooms[targetIndex]] = [newRooms[targetIndex], newRooms[index]];
+    
+    setRooms(newRooms); // Optimistic UI
+    
+    try {
+      await api.put('/rooms/reorder', { order: newRooms.map(r => r.id) });
+    } catch (err) {
+      alert('Gagal mengatur urutan kamar');
+      fetchRooms(); // revert on failure
     }
   };
 
@@ -119,10 +139,20 @@ export default function Rooms() {
                     {/* Edit Overlay */}
                     {isAuthenticated && (
                       <div className="absolute top-4 left-4 z-20 flex gap-2">
-                        <button onClick={() => { setEditingRoom(room); setIsFormOpen(true); }} className="p-2 bg-white/90 backdrop-blur text-primary rounded-lg shadow hover:bg-primary hover:text-white transition-colors">
+                        {idx > 0 && (
+                          <button onClick={() => handleReorder('left', idx)} className="p-2 bg-white/90 backdrop-blur text-gray-700 rounded-lg shadow hover:bg-gray-200 transition-colors" title="Geser Kiri">
+                            <ArrowLeft className="w-4 h-4" />
+                          </button>
+                        )}
+                        {idx < rooms.length - 1 && (
+                          <button onClick={() => handleReorder('right', idx)} className="p-2 bg-white/90 backdrop-blur text-gray-700 rounded-lg shadow hover:bg-gray-200 transition-colors" title="Geser Kanan">
+                            <ArrowRight className="w-4 h-4" />
+                          </button>
+                        )}
+                        <button onClick={() => { setEditingRoom(room); setIsFormOpen(true); }} className="p-2 bg-white/90 backdrop-blur text-primary rounded-lg shadow hover:bg-primary hover:text-white transition-colors" title="Edit Kamar">
                           <Edit2 className="w-4 h-4" />
                         </button>
-                        <button onClick={() => setDeletingRoomId(room.id)} className="p-2 bg-white/90 backdrop-blur text-red-500 rounded-lg shadow hover:bg-red-500 hover:text-white transition-colors">
+                        <button onClick={() => setDeletingRoomId(room.id)} className="p-2 bg-white/90 backdrop-blur text-red-500 rounded-lg shadow hover:bg-red-500 hover:text-white transition-colors" title="Hapus Kamar">
                           <Trash2 className="w-4 h-4" />
                         </button>
                       </div>

@@ -24,7 +24,7 @@ const mapToClient = (room) => {
 router.get('/', async (req, res) => {
   try {
     if (!supabase) throw new Error("Supabase is not configured");
-    const { data, error } = await supabase.from('rooms').select('*').order('created_at', { ascending: true });
+    const { data, error } = await supabase.from('rooms').select('*').order('order_index', { ascending: true }).order('created_at', { ascending: true });
     if (error) throw error;
     res.json(data ? data.map(mapToClient) : []);
   } catch (error) {
@@ -47,6 +47,21 @@ router.post('/', requireAuth, async (req, res) => {
     res.status(201).json(mapToClient(data));
   } catch (error) {
     res.status(500).json({ error: error.message || 'Failed to add room' });
+  }
+});
+
+router.put('/reorder', requireAuth, async (req, res) => {
+  try {
+    if (!supabase) throw new Error("Supabase is not configured");
+    const { order } = req.body;
+    
+    for (let i = 0; i < order.length; i++) {
+      await supabase.from('rooms').update({ order_index: i }).eq('id', order[i]);
+    }
+    
+    res.json({ success: true });
+  } catch (error) {
+    res.status(500).json({ error: error.message || 'Failed to reorder rooms' });
   }
 });
 
