@@ -1,12 +1,15 @@
 import { motion } from "framer-motion";
 import { useConfig } from "../../contexts/ConfigContext";
 import { buildWhatsAppLink } from "../../lib/whatsapp";
-import heroImg from "../../assets/images/hero.png";
+import heroImg from "../../assets/images/gedung.jpg";
 import { ChevronDown } from "lucide-react";
 
 export default function Hero() {
   const { config: siteConfig } = useConfig();
   const whatsappUrl = buildWhatsAppLink(null, null, siteConfig);
+  
+  const desktopBg = siteConfig.heroImageDesktop || heroImg;
+  const mobileBg = siteConfig.heroImageMobile || desktopBg;
 
   const handleScrollToRooms = (e) => {
     e.preventDefault();
@@ -32,9 +35,14 @@ export default function Hero() {
       {/* Background Image & Overlay */}
       <div className="absolute inset-0">
         <img 
-          src={heroImg} 
-          alt="Kasmaran Guest House Syariah" 
-          className="w-full h-full object-cover object-[center_60%]"
+          src={desktopBg} 
+          alt="Kasmaran Guest House Syariah Desktop" 
+          className="hidden md:block w-full h-full object-cover object-[center_60%]"
+        />
+        <img 
+          src={mobileBg} 
+          alt="Kasmaran Guest House Syariah Mobile" 
+          className="block md:hidden w-full h-full object-cover object-center"
         />
       </div>
       <div className="absolute inset-0 bg-black/60 pointer-events-none"></div>

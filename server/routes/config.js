@@ -16,6 +16,8 @@ const mapToDb = (config) => {
   if ('reservationHours' in config) { db.reservation_hours = config.reservationHours; delete db.reservationHours; }
   if ('googleMapsEmbedUrl' in config) { db.google_maps_embed_url = config.googleMapsEmbedUrl; delete db.googleMapsEmbedUrl; }
   if ('googleMapsPlaceUrl' in config) { db.google_maps_place_url = config.googleMapsPlaceUrl; delete db.googleMapsPlaceUrl; }
+  if ('heroImageDesktop' in config) { db.hero_image_desktop = config.heroImageDesktop; delete db.heroImageDesktop; }
+  if ('heroImageMobile' in config) { db.hero_image_mobile = config.heroImageMobile; delete db.heroImageMobile; }
   return db;
 };
 
@@ -31,6 +33,8 @@ const mapToClient = (config) => {
   if ('reservation_hours' in config) { client.reservationHours = config.reservation_hours; delete client.reservation_hours; }
   if ('google_maps_embed_url' in config) { client.googleMapsEmbedUrl = config.google_maps_embed_url; delete client.google_maps_embed_url; }
   if ('google_maps_place_url' in config) { client.googleMapsPlaceUrl = config.google_maps_place_url; delete client.google_maps_place_url; }
+  if ('hero_image_desktop' in config) { client.heroImageDesktop = config.hero_image_desktop; delete client.hero_image_desktop; }
+  if ('hero_image_mobile' in config) { client.heroImageMobile = config.hero_image_mobile; delete client.hero_image_mobile; }
   return client;
 };
 

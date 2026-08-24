@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { X, Save, Loader2, Plus, Trash2 } from 'lucide-react';
+import { X, Save, Loader2, Plus, Trash2, Upload } from 'lucide-react';
 import { motion } from 'framer-motion';
 import api from '../../lib/api';
 
@@ -8,8 +8,10 @@ export default function SiteConfigModal({ isOpen, onClose, onSave }) {
     businessName: '', tagline: '', shortLocation: '', address: [],
     phoneNumber: '', whatsappNumber: '', whatsappDefaultMessage: '',
     email: '', checkInTime: '', checkOutTime: '', reservationHours: '',
-    googleMapsEmbedUrl: '', googleMapsPlaceUrl: ''
+    googleMapsEmbedUrl: '', googleMapsPlaceUrl: '', heroImageDesktop: '', heroImageMobile: ''
   });
+  const [desktopImage, setDesktopImage] = useState(null);
+  const [mobileImage, setMobileImage] = useState(null);
   const [isSaving, setIsSaving] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
 
@@ -24,6 +26,8 @@ export default function SiteConfigModal({ isOpen, onClose, onSave }) {
     try {
       const res = await api.get('/config');
       setFormData(res.data);
+      setDesktopImage(res.data.heroImageDesktop || null);
+      setMobileImage(res.data.heroImageMobile || null);
     } catch (err) {
       console.error(err);
     } finally {
@@ -49,11 +53,50 @@ export default function SiteConfigModal({ isOpen, onClose, onSave }) {
   const addAddressLine = () => setFormData(prev => ({ ...prev, address: [...prev.address, ''] }));
   const removeAddressLine = (index) => setFormData(prev => ({ ...prev, address: prev.address.filter((_, i) => i !== index) }));
 
+  const handleImageUpload = (e, type) => {
+    const file = e.target.files[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        if (type === 'desktop') setDesktopImage({ file, preview: reader.result, isNew: true });
+        else setMobileImage({ file, preview: reader.result, isNew: true });
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const uploadFileToServer = async (fileObj, prefix) => {
+    if (!fileObj || !fileObj.isNew) return fileObj?.url || fileObj;
+    try {
+      const filename = `${prefix}-${Date.now()}-${fileObj.file.name.replace(/[^a-zA-Z0-9.-]/g, '')}`;
+      const res = await api.post('/upload', {
+        file: fileObj.preview,
+        folder: 'config',
+        filename
+      });
+      return res.data.url;
+    } catch (err) {
+      console.error("Upload failed", err);
+      throw new Error("Gagal upload gambar");
+    }
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setIsSaving(true);
     try {
-      await api.put('/config', formData);
+      let finalDesktopUrl = typeof desktopImage === 'string' ? desktopImage : formData.heroImageDesktop;
+      if (desktopImage && desktopImage.isNew) {
+        finalDesktopUrl = await uploadFileToServer(desktopImage, 'hero-desktop');
+      }
+      
+      let finalMobileUrl = typeof mobileImage === 'string' ? mobileImage : formData.heroImageMobile;
+      if (mobileImage && mobileImage.isNew) {
+        finalMobileUrl = await uploadFileToServer(mobileImage, 'hero-mobile');
+      }
+      
+      const payload = { ...formData, heroImageDesktop: finalDesktopUrl, heroImageMobile: finalMobileUrl };
+      await api.put('/config', payload);
       if (onSave) onSave();
       onClose();
     } catch (err) {
@@ -76,6 +119,50 @@ export default function SiteConfigModal({ isOpen, onClose, onSave }) {
         ) : (
           <div className="p-6 overflow-y-auto flex-1">
             <form id="configForm" onSubmit={handleSubmit} className="space-y-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 border-b pb-6">
+                <h3 className="col-span-full font-bold text-foreground">Gambar Latar Utama (Hero)</h3>
+                <div>
+                  <label className="block text-sm font-medium mb-2">Versi Desktop (Landscape)</label>
+                  <div className="border-2 border-dashed border-gray-300 rounded-xl p-4 flex flex-col items-center justify-center bg-gray-50 relative overflow-hidden h-40">
+                    {(desktopImage?.preview || (typeof desktopImage === 'string' && desktopImage)) ? (
+                      <>
+                        <img src={desktopImage.preview || desktopImage} alt="Desktop Preview" className="h-full object-cover rounded-lg" />
+                        <label className="absolute inset-0 flex items-center justify-center bg-black/50 opacity-0 hover:opacity-100 transition-opacity cursor-pointer">
+                          <span className="text-white bg-primary px-3 py-1 rounded text-sm flex items-center gap-1"><Upload className="w-4 h-4"/> Ganti Foto</span>
+                          <input type="file" accept="image/*" onChange={(e) => handleImageUpload(e, 'desktop')} className="hidden" />
+                        </label>
+                      </>
+                    ) : (
+                      <label className="cursor-pointer text-center">
+                        <Upload className="w-8 h-8 text-gray-400 mx-auto mb-2" />
+                        <span className="text-sm text-primary font-medium">Upload versi Laptop (contoh: 1920x1080)</span>
+                        <input type="file" accept="image/*" onChange={(e) => handleImageUpload(e, 'desktop')} className="hidden" />
+                      </label>
+                    )}
+                  </div>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium mb-2">Versi Mobile (Portrait)</label>
+                  <div className="border-2 border-dashed border-gray-300 rounded-xl p-4 flex flex-col items-center justify-center bg-gray-50 relative overflow-hidden h-40 w-full sm:w-2/3 mx-auto">
+                    {(mobileImage?.preview || (typeof mobileImage === 'string' && mobileImage)) ? (
+                      <>
+                        <img src={mobileImage.preview || mobileImage} alt="Mobile Preview" className="h-full object-cover rounded-lg" />
+                        <label className="absolute inset-0 flex items-center justify-center bg-black/50 opacity-0 hover:opacity-100 transition-opacity cursor-pointer">
+                          <span className="text-white bg-primary px-3 py-1 rounded text-sm flex items-center gap-1"><Upload className="w-4 h-4"/> Ganti Foto</span>
+                          <input type="file" accept="image/*" onChange={(e) => handleImageUpload(e, 'mobile')} className="hidden" />
+                        </label>
+                      </>
+                    ) : (
+                      <label className="cursor-pointer text-center">
+                        <Upload className="w-8 h-8 text-gray-400 mx-auto mb-2" />
+                        <span className="text-sm text-primary font-medium">Upload versi HP (contoh: 1080x1920)</span>
+                        <input type="file" accept="image/*" onChange={(e) => handleImageUpload(e, 'mobile')} className="hidden" />
+                      </label>
+                    )}
+                  </div>
+                </div>
+              </div>
+
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 border-b pb-6">
                 <h3 className="col-span-full font-bold text-foreground">Informasi Dasar</h3>
                 <div>
