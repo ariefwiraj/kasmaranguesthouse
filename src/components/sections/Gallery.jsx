@@ -23,6 +23,10 @@ export default function Gallery() {
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [editingItem, setEditingItem] = useState(null);
   const [deletingItemId, setDeletingItemId] = useState(null);
+  
+  // Drag and drop states
+  const [draggedItemId, setDraggedItemId] = useState(null);
+  const [dragOverItemId, setDragOverItemId] = useState(null);
 
   const fetchGallery = async () => {
     setIsLoading(true);
@@ -86,6 +90,48 @@ export default function Gallery() {
   const prevImage = () => {
     if (lightboxIndex !== null) {
       setLightboxIndex((prev) => (prev === 0 ? browserFilteredData.length - 1 : prev - 1));
+    }
+  };
+
+  const handleDragStart = (e, id) => {
+    if (!isAuthenticated || browserCategory !== "Semua") return;
+    setDraggedItemId(id);
+    e.dataTransfer.effectAllowed = "move";
+  };
+
+  const handleDragOver = (e, id) => {
+    e.preventDefault();
+    if (!isAuthenticated || browserCategory !== "Semua" || draggedItemId === id) return;
+    setDragOverItemId(id);
+  };
+
+  const handleDragEnd = () => {
+    setDraggedItemId(null);
+    setDragOverItemId(null);
+  };
+
+  const handleDrop = async (e, targetId) => {
+    e.preventDefault();
+    if (!isAuthenticated || browserCategory !== "Semua" || !draggedItemId || draggedItemId === targetId) {
+      handleDragEnd();
+      return;
+    }
+
+    const newItems = [...galleryItems];
+    const sourceIndex = newItems.findIndex(i => i.id === draggedItemId);
+    const targetIndex = newItems.findIndex(i => i.id === targetId);
+
+    const [draggedItem] = newItems.splice(sourceIndex, 1);
+    newItems.splice(targetIndex, 0, draggedItem);
+
+    setGalleryItems(newItems);
+    handleDragEnd();
+
+    try {
+      await api.put('/gallery/reorder', { order: newItems.map(i => i.id) });
+    } catch (err) {
+      alert('Gagal mengatur urutan galeri');
+      fetchGallery();
     }
   };
 
@@ -263,7 +309,12 @@ export default function Gallery() {
                       <div 
                         key={`${item.id}-${idx}`} 
                         onClick={() => !isAuthenticated && setLightboxIndex(idx)}
-                        className="relative aspect-[4/3] rounded-lg overflow-hidden bg-white border border-border/50 group shadow-sm hover:shadow-md transition-all hover:border-primary/50 cursor-pointer"
+                        draggable={isAuthenticated && browserCategory === "Semua"}
+                        onDragStart={(e) => handleDragStart(e, item.id)}
+                        onDragOver={(e) => handleDragOver(e, item.id)}
+                        onDragEnd={handleDragEnd}
+                        onDrop={(e) => handleDrop(e, item.id)}
+                        className={`relative aspect-[4/3] rounded-lg overflow-hidden bg-white border group shadow-sm hover:shadow-md transition-all ${dragOverItemId === item.id ? 'border-primary border-4 scale-105 z-10' : 'border-border/50 hover:border-primary/50'} ${isAuthenticated && browserCategory === "Semua" ? 'cursor-grab active:cursor-grabbing' : 'cursor-pointer'} ${draggedItemId === item.id ? 'opacity-50' : 'opacity-100'}`}
                       >
                         {isAuthenticated && (
                           <div className="absolute top-2 left-2 z-20 flex flex-col gap-1">
@@ -284,6 +335,11 @@ export default function Gallery() {
                         ) : (
                           <div className="w-full h-full flex flex-col items-center justify-center text-muted-foreground bg-[#FAF7F2]">
                             <ImageIcon size={32} className="mb-2 opacity-30" />
+                          </div>
+                        )}
+                        {isAuthenticated && browserCategory !== "Semua" && (
+                          <div className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity z-10">
+                            <span className="text-white text-xs font-medium text-center px-4">Pindah ke tab "Semua" untuk mengatur urutan</span>
                           </div>
                         )}
                         <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors duration-300" />

@@ -12,7 +12,7 @@ router.get('/', async (req, res) => {
     const { data: catData, error: catError } = await supabase.from('gallery_categories').select('name');
     if (catError) throw catError;
     
-    const { data: itemData, error: itemError } = await supabase.from('gallery_items').select('*').order('created_at', { ascending: true });
+    const { data: itemData, error: itemError } = await supabase.from('gallery_items').select('*').order('order_index', { ascending: true }).order('created_at', { ascending: true });
     if (itemError) throw itemError;
     
     res.json({
@@ -39,6 +39,21 @@ router.post('/', requireAuth, async (req, res) => {
     res.status(201).json(data);
   } catch (error) {
     res.status(500).json({ error: error.message || 'Failed to add gallery item' });
+  }
+});
+
+router.put('/reorder', requireAuth, async (req, res) => {
+  try {
+    if (!supabase) throw new Error("Supabase is not configured");
+    const { order } = req.body;
+    
+    for (let i = 0; i < order.length; i++) {
+      await supabase.from('gallery_items').update({ order_index: i }).eq('id', order[i]);
+    }
+    
+    res.json({ success: true });
+  } catch (error) {
+    res.status(500).json({ error: error.message || 'Failed to reorder gallery' });
   }
 });
 
