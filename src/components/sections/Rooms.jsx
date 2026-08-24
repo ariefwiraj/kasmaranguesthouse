@@ -163,7 +163,7 @@ export default function Rooms() {
                       <img 
                         src={room.image} 
                         alt={room.name} 
-                        className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" 
+                        className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" 
                       />
                     ) : (
                       <div className="w-full h-full flex items-center justify-center">
@@ -174,7 +174,7 @@ export default function Rooms() {
                     )}
                     
                     {/* Price Badge */}
-                    <div className="absolute top-4 right-4 bg-white/95 backdrop-blur py-2 px-4 rounded-lg shadow-sm border border-border/50">
+                    <div className="absolute top-4 right-4 z-20 bg-white/95 backdrop-blur py-2 px-4 rounded-lg shadow-sm border border-border/50">
                       <div className="text-xs text-muted-foreground mb-0.5">harga</div>
                       <div className="font-bold text-primary">{room.startingPrice}</div>
                     </div>
@@ -264,47 +264,55 @@ export default function Rooms() {
               <div className="flex flex-col md:flex-row flex-grow overflow-hidden">
                 
                 {/* Left Column: Gallery */}
-                <div className="w-full md:w-[60%] bg-[#1c2331] flex flex-col relative h-[40vh] md:h-auto">
+                <div className="w-full md:w-[60%] bg-[#12161f] flex flex-col relative h-[50vh] md:h-full overflow-hidden">
                   {/* Main Image */}
-                  <div className="flex-grow relative flex items-center justify-center">
+                  <div className="flex-grow relative flex items-center justify-center overflow-hidden p-2 md:p-4">
+                    {selectedRoom.gallery[currentImageIndex]?.url && (
+                      <img 
+                        src={selectedRoom.gallery[currentImageIndex]?.url} 
+                        alt="" 
+                        aria-hidden="true" 
+                        className="absolute inset-0 w-full h-full object-cover blur-2xl scale-110 opacity-40 pointer-events-none" 
+                      />
+                    )}
                     <img 
                       src={selectedRoom.gallery[currentImageIndex]?.url || `https://placehold.co/800x600/2a3441/FFF?text=${encodeURIComponent(selectedRoom.gallery[currentImageIndex]?.title || 'Image')}`}
                       alt={selectedRoom.gallery[currentImageIndex]?.title || selectedRoom.name}
-                      className="w-full h-full object-contain"
+                      className="relative z-10 max-h-full max-w-full object-contain shadow-2xl rounded-sm"
                     />
                     
                     {/* Navigation Arrows */}
                     <button 
                       onClick={() => setCurrentImageIndex((prev) => prev === 0 ? selectedRoom.gallery.length - 1 : prev - 1)}
-                      className="absolute left-4 w-10 h-10 bg-white rounded-full flex items-center justify-center shadow-lg hover:bg-gray-100 transition-colors z-10"
+                      className="absolute left-4 w-10 h-10 bg-white/90 backdrop-blur rounded-full flex items-center justify-center shadow-lg hover:bg-white transition-colors z-20"
                     >
                       <ChevronLeft size={24} className="text-primary pr-0.5" />
                     </button>
                     <button 
                       onClick={() => setCurrentImageIndex((prev) => prev === selectedRoom.gallery.length - 1 ? 0 : prev + 1)}
-                      className="absolute right-4 w-10 h-10 bg-white rounded-full flex items-center justify-center shadow-lg hover:bg-gray-100 transition-colors z-10"
+                      className="absolute right-4 w-10 h-10 bg-white/90 backdrop-blur rounded-full flex items-center justify-center shadow-lg hover:bg-white transition-colors z-20"
                     >
                       <ChevronRight size={24} className="text-primary pl-0.5" />
                     </button>
                     
                     {/* Bottom overlay info */}
-                    <div className="absolute bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-black/80 to-transparent flex justify-between items-end">
-                      <span className="text-white font-medium">{selectedRoom.gallery[currentImageIndex]?.title}</span>
-                      <span className="text-white font-medium font-mono text-sm">{currentImageIndex + 1}/{selectedRoom.gallery.length}</span>
+                    <div className="absolute bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-black/80 to-transparent flex justify-between items-end z-20">
+                      <span className="text-white font-medium drop-shadow">{selectedRoom.gallery[currentImageIndex]?.title}</span>
+                      <span className="text-white font-medium font-mono text-sm drop-shadow">{currentImageIndex + 1}/{selectedRoom.gallery.length}</span>
                     </div>
                   </div>
                   
                   {/* Thumbnails */}
-                  <div className="h-24 bg-[#1c2331] p-3 flex gap-3 overflow-x-auto">
+                  <div className="flex-shrink-0 min-h-[88px] bg-[#12161f] p-3.5 flex items-center gap-3 overflow-x-auto z-10 border-t border-white/10 hide-scrollbar">
                     {selectedRoom.gallery.map((img, idx) => (
                       <button 
                         key={idx}
                         onClick={() => setCurrentImageIndex(idx)}
-                        className={`relative flex-shrink-0 w-24 h-full rounded-md overflow-hidden border-2 transition-all ${currentImageIndex === idx ? 'border-primary' : 'border-transparent opacity-60 hover:opacity-100'}`}
+                        className={`relative flex-shrink-0 w-20 md:w-24 h-14 md:h-16 rounded-lg overflow-hidden border-2 transition-all cursor-pointer ${currentImageIndex === idx ? 'border-primary ring-2 ring-primary/40 scale-105 z-10' : 'border-white/20 opacity-70 hover:opacity-100'}`}
                       >
                         <img 
                           src={img.url || `https://placehold.co/150x100/2a3441/FFF?text=${idx+1}`}
-                          alt={img.title}
+                          alt={img.title || `Thumbnail ${idx+1}`}
                           className="w-full h-full object-cover"
                         />
                       </button>

@@ -24,10 +24,6 @@ export default function Hero() {
   };
 
   return (
-    /* PERUBAHAN: 
-      - Mengubah min-h-[105vh] menjadi min-h-[85vh] (atau bisa pakai min-h-screen jika ingin pas 1 layar).
-      - Menyesuaikan padding top untuk mobile (pt-32) dan desktop (md:pt-44) agar konten agak turun ke bawah.
-    */
     <section 
       id="home" 
       className="relative min-h-screen md:min-h-screen flex items-center justify-center pt-32 md:pt-44 pb-12 overflow-hidden isolate"
@@ -45,7 +41,7 @@ export default function Hero() {
           className="block md:hidden w-full h-full object-cover object-center"
         />
       </div>
-      <div className="absolute inset-0 bg-black/60 pointer-events-none"></div>
+      <div className="absolute inset-0 bg-black/45 pointer-events-none"></div>
 
       {/* Konten Utama */}
       <div className="max-w-4xl mx-auto px-4 sm:px-6 w-full relative z-10 text-center mb-6 sm:mb-12">
@@ -64,17 +60,8 @@ export default function Hero() {
             <div className="h-[1px] w-5 sm:w-16 bg-gradient-to-l from-transparent to-gold"></div>
           </div>
           
-          {/* Main Headline */}
-          <h1 className="text-4xl md:text-6xl lg:text-7xl font-bold leading-[1.15] mb-8 text-white drop-shadow-2xl font-heading">
-            Kenyamanan dan Ketenangan <br className="hidden sm:block" />
-            <span className="text-gold italic font-medium drop-shadow-lg">dalam Setiap Persinggahan</span>
-          </h1>
-          
-          {/* Description */}
-          <p className="text-white/80 font-light text-base md:text-xl leading-relaxed mb-12 max-w-2xl mx-auto drop-shadow-md">
-            Guest house syariah yang menghadirkan suasana hangat,
-            fasilitas lengkap, dan lokasi strategis di Jakarta Timur.
-          </p>
+          {/* Spacer pengganti teks headline & deskripsi agar posisi tombol tidak bergeser */}
+          <div className="h-75 md:h-70"></div>
           
           {/* Premium CTA Buttons */}
           <div className="flex flex-col sm:flex-row gap-4 sm:gap-6 justify-center w-full sm:w-auto px-4 sm:px-0">

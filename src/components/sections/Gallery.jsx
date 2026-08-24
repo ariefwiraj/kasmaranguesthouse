@@ -225,7 +225,7 @@ export default function Gallery() {
                     <img 
                       src={item.url} 
                       alt={item.title}
-                      className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
+                      className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
                     />
                   ) : (
                     <div className="w-full h-full flex flex-col items-center justify-center text-muted-foreground bg-[#FAF7F2]">
@@ -235,7 +235,7 @@ export default function Gallery() {
                   )}
                   
                   {/* Hover Overlay */}
-                  <div className={`absolute inset-0 transition-opacity duration-300 flex flex-col justify-end p-6 ${isLastVisible ? 'bg-black/60 opacity-100 items-center justify-center' : 'bg-black/40 opacity-0 group-hover:opacity-100'}`}>
+                  <div className={`absolute inset-0 z-20 transition-opacity duration-300 flex flex-col justify-end p-6 ${isLastVisible ? 'bg-black/60 opacity-100 items-center justify-center' : 'bg-black/40 opacity-0 group-hover:opacity-100'}`}>
                     {isLastVisible ? (
                       <div className="text-center text-white">
                         <span className="block text-3xl font-light mb-1">+{remainingCount}</span>
@@ -342,8 +342,8 @@ export default function Gallery() {
                             <span className="text-white text-xs font-medium text-center px-4">Pindah ke tab "Semua" untuk mengatur urutan</span>
                           </div>
                         )}
-                        <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors duration-300" />
-                        <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/70 to-transparent p-4 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                        <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors duration-300 z-10" />
+                        <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/70 to-transparent p-4 opacity-0 group-hover:opacity-100 transition-opacity duration-300 z-20">
                           <p className="text-white text-sm font-medium">{item.title}</p>
                         </div>
                       </div>
@@ -409,12 +409,20 @@ export default function Gallery() {
                     {/* Lightbox Image Container */}
                     <div className="flex-grow relative flex items-center justify-center overflow-hidden">
                       {browserFilteredData[lightboxIndex].url ? (
-                        <img 
-                          src={browserFilteredData[lightboxIndex].url}
-                          alt={browserFilteredData[lightboxIndex].title}
-                          className="w-full h-full object-contain cursor-default"
-                          onClick={(e) => e.stopPropagation()}
-                        />
+                        <>
+                          <img 
+                            src={browserFilteredData[lightboxIndex].url}
+                            alt=""
+                            aria-hidden="true"
+                            className="absolute inset-0 w-full h-full object-cover blur-2xl scale-110 opacity-40 pointer-events-none"
+                          />
+                          <img 
+                            src={browserFilteredData[lightboxIndex].url}
+                            alt={browserFilteredData[lightboxIndex].title}
+                            className="relative z-10 max-h-full max-w-full object-contain cursor-default p-2 md:p-6 shadow-2xl"
+                            onClick={(e) => e.stopPropagation()}
+                          />
+                        </>
                       ) : (
                         <div 
                           className="w-full h-full flex flex-col items-center justify-center text-white/50 cursor-default"

@@ -1,6 +1,6 @@
 import { motion } from "framer-motion";
 import { CheckCircle2 } from "lucide-react";
-import aboutImg from "../../assets/images/about.jpg";
+import aboutImg from "../../assets/images/kolam-renang.jpg";
 
 export default function About() {
   return (

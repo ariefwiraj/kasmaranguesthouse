@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { X, Upload, Save, Loader2, Plus, Trash2 } from 'lucide-react';
+import { X, Upload, Save, Loader2, Plus, Trash2, GripVertical, ArrowUp, ArrowDown } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import api from '../../lib/api';
 
@@ -10,6 +10,8 @@ export default function RoomFormModal({ isOpen, onClose, initialData, onSave, ex
   });
   const [mainImage, setMainImage] = useState(null);
   const [isSaving, setIsSaving] = useState(false);
+  const [draggedGalleryIndex, setDraggedGalleryIndex] = useState(null);
+  const [dragOverGalleryIndex, setDragOverGalleryIndex] = useState(null);
   const isEditing = !!initialData;
 
   const uniqueFeatures = Array.from(new Set(existingRooms.flatMap(r => r.features || [])));
@@ -19,6 +21,8 @@ export default function RoomFormModal({ isOpen, onClose, initialData, onSave, ex
 
   useEffect(() => {
     if (isOpen) {
+      setDraggedGalleryIndex(null);
+      setDragOverGalleryIndex(null);
       if (initialData) {
         setFormData(initialData);
         setMainImage(initialData.image || null);
@@ -33,6 +37,50 @@ export default function RoomFormModal({ isOpen, onClose, initialData, onSave, ex
   }, [isOpen, initialData]);
 
   if (!isOpen) return null;
+
+  const handleGalleryDragStart = (e, index) => {
+    setDraggedGalleryIndex(index);
+    e.dataTransfer.effectAllowed = 'move';
+  };
+
+  const handleGalleryDragOver = (e, index) => {
+    e.preventDefault();
+    if (draggedGalleryIndex === null || draggedGalleryIndex === index) return;
+    setDragOverGalleryIndex(index);
+  };
+
+  const handleGalleryDragEnd = () => {
+    setDraggedGalleryIndex(null);
+    setDragOverGalleryIndex(null);
+  };
+
+  const handleGalleryDrop = (e, targetIndex) => {
+    e.preventDefault();
+    if (draggedGalleryIndex === null || draggedGalleryIndex === targetIndex) {
+      handleGalleryDragEnd();
+      return;
+    }
+
+    setFormData(prev => {
+      const newGallery = [...prev.gallery];
+      const [draggedItem] = newGallery.splice(draggedGalleryIndex, 1);
+      newGallery.splice(targetIndex, 0, draggedItem);
+      return { ...prev, gallery: newGallery };
+    });
+
+    handleGalleryDragEnd();
+  };
+
+  const handleMoveGalleryItem = (index, direction) => {
+    const targetIndex = direction === 'up' ? index - 1 : index + 1;
+    if (targetIndex < 0 || targetIndex >= formData.gallery.length) return;
+
+    setFormData(prev => {
+      const newGallery = [...prev.gallery];
+      [newGallery[index], newGallery[targetIndex]] = [newGallery[targetIndex], newGallery[index]];
+      return { ...prev, gallery: newGallery };
+    });
+  };
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -201,8 +249,9 @@ export default function RoomFormModal({ isOpen, onClose, initialData, onSave, ex
               <div className="border-2 border-dashed border-gray-300 rounded-xl p-4 flex flex-col items-center justify-center bg-gray-50 relative overflow-hidden h-40">
                 {(mainImage?.preview || (typeof mainImage === 'string' && mainImage)) ? (
                   <>
-                    <img src={mainImage.preview || mainImage} alt="Preview" className="h-full object-cover rounded-lg" />
-                    <label className="absolute inset-0 flex items-center justify-center bg-black/50 opacity-0 hover:opacity-100 transition-opacity cursor-pointer">
+                    <img src={mainImage.preview || mainImage} alt="" aria-hidden="true" className="absolute inset-0 w-full h-full object-cover blur-md opacity-30 pointer-events-none" />
+                    <img src={mainImage.preview || mainImage} alt="Preview" className="relative z-10 h-full max-w-full object-contain rounded-lg shadow-sm" />
+                    <label className="absolute inset-0 z-20 flex items-center justify-center bg-black/50 opacity-0 hover:opacity-100 transition-opacity cursor-pointer">
                       <span className="text-white bg-primary px-3 py-1 rounded text-sm flex items-center gap-1"><Upload className="w-4 h-4"/> Ganti Foto</span>
                       <input type="file" accept="image/*" onChange={(e) => handleImageUpload(e, true)} className="hidden" />
                     </label>
@@ -220,15 +269,32 @@ export default function RoomFormModal({ isOpen, onClose, initialData, onSave, ex
             {/* Gallery */}
             <div>
               <div className="flex items-center justify-between mb-2">
-                <label className="block text-sm font-medium">Galeri Kamar (Carousel Detail)</label>
+                <div className="flex items-center gap-2">
+                  <label className="block text-sm font-medium">Galeri Kamar (Carousel Detail)</label>
+                  <span className="text-xs text-muted-foreground hidden sm:inline-block">(Geser / Drag untuk atur urutan)</span>
+                </div>
                 <button type="button" onClick={() => addArrayItem('gallery', { id: Date.now(), title: '', url: '' })} className="text-primary text-sm flex items-center gap-1 hover:underline">
                   <Plus className="w-4 h-4" /> Tambah Foto
                 </button>
               </div>
               <div className="space-y-3">
                 {formData.gallery.map((item, index) => (
-                  <div key={index} className="flex gap-3 items-center border p-3 rounded-lg bg-gray-50">
-                    <label className="relative w-20 h-20 bg-gray-200 rounded cursor-pointer overflow-hidden flex-shrink-0 flex items-center justify-center">
+                  <div 
+                    key={item.id || index}
+                    draggable
+                    onDragStart={(e) => handleGalleryDragStart(e, index)}
+                    onDragOver={(e) => handleGalleryDragOver(e, index)}
+                    onDragEnd={handleGalleryDragEnd}
+                    onDrop={(e) => handleGalleryDrop(e, index)}
+                    className={`flex gap-3 items-center border p-3 rounded-lg bg-gray-50 transition-all duration-200 ${dragOverGalleryIndex === index ? 'border-primary border-2 bg-primary/5 scale-[1.01] shadow-md' : 'border-gray-200'} ${draggedGalleryIndex === index ? 'opacity-40 border-dashed border-primary' : 'opacity-100'}`}
+                  >
+                    {/* Drag Handle */}
+                    <div className="cursor-grab active:cursor-grabbing text-gray-400 hover:text-gray-600 p-1 flex-shrink-0" title="Geser posisi foto">
+                      <GripVertical className="w-5 h-5" />
+                    </div>
+
+                    {/* Image Preview & Upload Button */}
+                    <label className="relative w-20 h-20 bg-gray-200 rounded cursor-pointer overflow-hidden flex-shrink-0 flex items-center justify-center border border-gray-300">
                       {(item.preview || item.url) ? (
                         <img src={item.preview || item.url} alt="Gallery" className="w-full h-full object-cover" />
                       ) : (
@@ -236,10 +302,41 @@ export default function RoomFormModal({ isOpen, onClose, initialData, onSave, ex
                       )}
                       <input type="file" accept="image/*" onChange={(e) => handleImageUpload(e, false, index)} className="hidden" />
                     </label>
+
+                    {/* Title Input */}
                     <div className="flex-1">
-                      <input type="text" list="galleryTitlesList" placeholder="Judul Foto (ex: Kamar Mandi)" value={item.title} onChange={(e) => handleArrayChange('gallery', index, e.target.value, 'title')} className="w-full border rounded-lg px-3 py-2 text-sm" />
+                      <input type="text" list="galleryTitlesList" placeholder="Judul Foto (ex: Kamar Mandi)" value={item.title} onChange={(e) => handleArrayChange('gallery', index, e.target.value, 'title')} className="w-full border rounded-lg px-3 py-2 text-sm bg-white" />
                     </div>
-                    <button type="button" onClick={() => removeArrayItem('gallery', index)} className="p-2 text-red-500 hover:bg-red-50 rounded-lg"><Trash2 className="w-5 h-5" /></button>
+
+                    {/* Move Up/Down & Delete */}
+                    <div className="flex items-center gap-1 flex-shrink-0">
+                      <button 
+                        type="button" 
+                        disabled={index === 0}
+                        onClick={() => handleMoveGalleryItem(index, 'up')}
+                        className="p-1.5 text-gray-500 hover:text-primary hover:bg-gray-200 rounded-md disabled:opacity-30 disabled:hover:bg-transparent"
+                        title="Geser ke Atas"
+                      >
+                        <ArrowUp className="w-4 h-4" />
+                      </button>
+                      <button 
+                        type="button" 
+                        disabled={index === formData.gallery.length - 1}
+                        onClick={() => handleMoveGalleryItem(index, 'down')}
+                        className="p-1.5 text-gray-500 hover:text-primary hover:bg-gray-200 rounded-md disabled:opacity-30 disabled:hover:bg-transparent"
+                        title="Geser ke Bawah"
+                      >
+                        <ArrowDown className="w-4 h-4" />
+                      </button>
+                      <button 
+                        type="button" 
+                        onClick={() => removeArrayItem('gallery', index)} 
+                        className="p-2 text-red-500 hover:bg-red-50 rounded-lg ml-1"
+                        title="Hapus Foto"
+                      >
+                        <Trash2 className="w-5 h-5" />
+                      </button>
+                    </div>
                   </div>
                 ))}
               </div>
